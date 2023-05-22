@@ -1,6 +1,12 @@
 package nl.inholland.Bank.API.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.util.List;
 
@@ -19,8 +25,7 @@ public class Account {
     @ElementCollection(fetch = FetchType.EAGER)
     private List<nl.inholland.Bank.API.model.AccountStatus> accountStatuses;
     private int absoluteLimit;
-    //fix the user
-    private int user;
+
 
     public Long getId() {
         return this.id;
@@ -68,14 +73,6 @@ public class Account {
 
     public void setAbsoluteLimit(int absoluteLimit) {
         this.absoluteLimit = absoluteLimit;
-    }
-
-    public int getUser() {
-        return user;
-    }
-
-    public void setUser(int user) {
-        this.user = user;
     }
 
     @Override
