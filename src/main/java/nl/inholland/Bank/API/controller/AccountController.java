@@ -28,8 +28,8 @@ public class AccountController {
         }
     }
 
-    @GetMapping(value = "{id}/value")
-    public ResponseEntity getAccountById(@PathVariable long id) {
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAccountById(@PathVariable long id) {
         try {
             return ResponseEntity.ok().body(accountService.getAccountById(id));
         } catch (Exception e) {
