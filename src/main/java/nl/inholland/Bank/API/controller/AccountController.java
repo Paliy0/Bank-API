@@ -4,10 +4,9 @@ import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.service.AccountService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 
 @RestController
@@ -28,10 +27,22 @@ public class AccountController {
         }
     }
 
+    //change to search by iban
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAccountById(@PathVariable long id) {
         try {
             return ResponseEntity.ok().body(accountService.getAccountById(id));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity insertAccount(@RequestBody Account newAccount) {
+        try {
+            accountService.saveAccount(newAccount);
+            //URI location = new URI("/accounts" + newAccount.getId());
+            return  ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }

@@ -23,8 +23,7 @@ public class AccountService {
         return accountRepository.findById(id);
     }
 
-    public void SaveAccount(Account newAccount){
+    public void saveAccount(Account newAccount){
         accountRepository.save(newAccount);
     }
-
 }
