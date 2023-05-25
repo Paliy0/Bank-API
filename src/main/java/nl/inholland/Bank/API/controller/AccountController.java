@@ -1,14 +1,13 @@
 package nl.inholland.Bank.API.controller;
 
 import nl.inholland.Bank.API.model.Account;
+import nl.inholland.Bank.API.model.AccountStatus;
 import nl.inholland.Bank.API.service.AccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
-
 
 @RestController
 @RequestMapping(value = "/accounts", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -19,58 +18,104 @@ public class AccountController {
         this.accountService = accountService;
     }
 
+    /**
+     * Get all accounts
+     *
+     * HTTP Method: GET
+     * URL: /accounts
+     *
+     */
     @GetMapping
     public ResponseEntity<Iterable<Account>> getAllAccounts() {
         try {
             //add limit and offset
             return ResponseEntity.ok().body(accountService.getAllAccounts());
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+                return ResponseEntity.notFound().build();
+            }
     }
 
-    //change to search by iban
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAccountById(@PathVariable long id) {
+    /**
+     * Get an account by IBAN
+     *
+     * HTTP Method: GET
+     * URL: /accounts/{iban}
+     *
+     */
+    @GetMapping(value = "/{iban}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
         try {
-            return ResponseEntity.ok().body(accountService.getAccountById(id));
+            Account account = accountService.getAccountByIban(iban);
+
+            if (account != null) {
+                return ResponseEntity.ok().body(account);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account with IBAN: " + iban + " not found");
+            }
+
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving account: " + e.getMessage());
         }
     }
 
-    @PostMapping
-    public ResponseEntity insertAccount(@RequestBody Account newAccount) {
+    /**
+     * Get an IBAN by Customer Name
+     *
+     * HTTP Method: GET
+     * URL: /accounts/getIbanByCustomerName?firstName=accountHolderFirstName
+     *
+     */
+    @GetMapping(value = "/getIbanByCustomerName", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Iterable<Account>> getIbanByCustomerName(@RequestParam String firstName) {
         try {
-            //check if user is logged in as employee
+            Iterable<Account> account = accountService.getIbanByCustomerName(firstName);
+
+            if (account != null) {
+                return ResponseEntity.ok().body(accountService.getIbanByCustomerName(firstName));
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Post an account
+     *
+     * HTTP Method: POST
+     * URL: /accounts
+     *
+     */
+    @PostMapping
+    public ResponseEntity<?> insertAccount(@RequestBody Account newAccount) {
+        try {
+//            if (!isLoggedInAsEmployee()) {
+//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
+//            }
             accountService.saveAccount(newAccount);
-            //URI location = new URI("/accounts" + newAccount.getId());
             return  ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }
     }
 
-    @PutMapping("/{iban}/status")
-    public ResponseEntity<Account> updateAccountStatus(@PathVariable("iban") String iban,
-                                                       @RequestParam("status") String status) {
+    /**
+     * Update status of account
+     *
+     * HTTP Method: PUT
+     * URL: /accounts/accountStatus/{iban}
+     *
+     */
+    @PutMapping(value = "/accountStatus/{iban}")
+    public ResponseEntity<?> updateAccountStatus(@PathVariable String iban, @RequestBody AccountStatus accountStatus) {
         try {
-
-            //check user role
-            //get account by iban
-            //account = accountService.getAccountById(id);
-            //if account is null - throw error
-//            if (account == null) {
-//                return ResponseEntity.notFound().build();
-//            }
-            //update status
-            //save updated account
-//            accountService.saveAccount(account);
-//            return  ResponseEntity.ok().build(account);
+                accountService.updateAccountStatus(iban, accountStatus);
+                return ResponseEntity.status(HttpStatus.OK).body("Updated successfully");
+            //return ResponseEntity.ok().build();
         } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }
-        return null;
     }
-
 }

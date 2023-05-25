@@ -3,30 +3,32 @@ package nl.inholland.Bank.API.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Entity
-@Table(name="accounts")
+@Table(name = "accounts")
 public class Account {
-
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_seq")
     @Id
     private Long id;
-
     private String iban;
-    private int balance;
-    private int absoluteLimit;
+    private double balance;
+    private double absoluteLimit;
     private LocalDate createdAt = LocalDate.now();
+    @Enumerated(EnumType.ORDINAL)
+    private AccountType accountType;
+    @Enumerated(EnumType.ORDINAL)
+    private AccountStatus accountStatus;
+    @ManyToOne
+    private User accountHolder;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private List<nl.inholland.Bank.API.model.AccountType> accountType;
+    public Account() {
+    }
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private List<nl.inholland.Bank.API.model.AccountStatus> accountStatuse;
-
-    //@ManyToOne
-    //private User user;
-
+    public Account(AccountType accountType, AccountStatus accountStatus, User accountHolder) {
+        this.accountType = accountType;
+        this.accountStatus = accountStatus;
+        this.accountHolder = accountHolder;
+    }
 
     public Long getId() {
         return this.id;
@@ -44,19 +46,19 @@ public class Account {
         this.iban = iban;
     }
 
-    public int getBalance() {
+    public double getBalance() {
         return balance;
     }
 
-    public void setBalance(int balance) {
+    public void setBalance(double balance) {
         this.balance = balance;
     }
 
-    public int getAbsoluteLimit() {
+    public double getAbsoluteLimit() {
         return absoluteLimit;
     }
 
-    public void setAbsoluteLimit(int absoluteLimit) {
+    public void setAbsoluteLimit(double absoluteLimit) {
         this.absoluteLimit = absoluteLimit;
     }
 
@@ -68,32 +70,27 @@ public class Account {
         this.createdAt = createdAt;
     }
 
-    public List<AccountType> getAccountTypes() {
+    public AccountType getAccountType() {
         return accountType;
     }
 
-    public void setAccountTypes(List<AccountType> accountTypes) {
-        this.accountType = accountTypes;
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
     }
 
-    public List<AccountStatus> getAccountStatuses() {
-        return accountStatuse;
+    public AccountStatus getAccountStatus() {
+        return accountStatus;
     }
 
-    public void setAccountStatuses(List<AccountStatus> accountStatuses) {
-        this.accountStatuse = accountStatuses;
+    public void setAccountStatus(AccountStatus accountStatus) {
+        this.accountStatus = accountStatus;
     }
 
-    @Override
-    public String toString() {
-        final StringBuffer sb = new StringBuffer("Account{");
-        sb.append("id=").append(id);
-        sb.append(", iban='").append(iban).append('\'');
-        sb.append(", balance='").append(balance).append('\'');
-        sb.append(", accountTypes='").append(accountType).append('\'');
-        sb.append(", accountStatuses=").append(accountStatuse).append('\'');
-        sb.append(", absoluteLimit=").append(absoluteLimit);
-        sb.append('}');
-        return sb.toString();
+    public User getAccountHolder() {
+        return accountHolder;
+    }
+
+    public void setAccountHolder(User accountHolder) {
+        this.accountHolder = accountHolder;
     }
 }

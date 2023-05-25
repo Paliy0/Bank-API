@@ -1,29 +1,40 @@
 package nl.inholland.Bank.API.service;
 
 import nl.inholland.Bank.API.model.Account;
+import nl.inholland.Bank.API.model.AccountStatus;
 import nl.inholland.Bank.API.repository.AccountRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    private final UserService userService;
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, UserService userService) {
         this.accountRepository = accountRepository;
+        this.userService = userService;
     }
 
     public Iterable<Account> getAllAccounts() {
         return accountRepository.findAll();
     }
 
-    public Optional<Account> getAccountById(Long id) {
-        return accountRepository.findById(id);
+    public Account getAccountByIban(String iban) {
+        return accountRepository.findAccountByIban(iban);
     }
 
-    public void saveAccount(Account newAccount){
+    public Iterable<Account> getIbanByCustomerName(String firstName) {
+        return accountRepository.findIbanByAccountHolder_FirstName(firstName);
+    }
+
+    public void saveAccount(Account newAccount) {
         accountRepository.save(newAccount);
+    }
+
+    public void updateAccountStatus(String iban, AccountStatus accountStatus) {
+        Account updateAccount = accountRepository.findAccountByIban(iban);
+        updateAccount.setAccountStatus(accountStatus);
+        accountRepository.save(updateAccount);
     }
 }
