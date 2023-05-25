@@ -18,15 +18,18 @@ public class AccountController {
     }
 
     /**
-     * Get all accounts
+     * Get all accounts with pagination
      * HTTP Method: GET
      * URL: /accounts
+     * Query parameters:
+     * - limit - items per page (10 by default)
+     * - offset - starting point (0 by default)
      */
     @GetMapping
-    public ResponseEntity<Iterable<Account>> getAllAccounts() {
+    public ResponseEntity<Iterable<Account>> getAllAccounts(@RequestParam(defaultValue = "10") int limit,
+                                                            @RequestParam(defaultValue = "0") int offset) {
         try {
-            //add limit and offset
-            return ResponseEntity.ok().body(accountService.getAllAccounts());
+            return ResponseEntity.ok().body(accountService.getAllAccounts(limit, offset));
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
@@ -82,9 +85,6 @@ public class AccountController {
     @PostMapping
     public ResponseEntity<?> insertAccount(@RequestBody Account newAccount) {
         try {
-//            if (!isLoggedInAsEmployee()) {
-//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-//            }
             accountService.saveAccount(newAccount);
             return ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully");
         } catch (Exception e) {

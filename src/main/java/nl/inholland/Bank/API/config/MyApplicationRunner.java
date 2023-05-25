@@ -39,8 +39,8 @@ public class MyApplicationRunner implements ApplicationRunner {
         user.setRole(Role.ROLE_USER);
         userService.add(user);
 
-        Account account = new Account(AccountType.CURRENT, AccountStatus.OPEN, user);
-        account.setIban("NL06INHL0123456789");
+        Account account = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user);
+        account.setIban(accountService.generateIBAN());
         accountService.saveAccount(account);
     }
 }

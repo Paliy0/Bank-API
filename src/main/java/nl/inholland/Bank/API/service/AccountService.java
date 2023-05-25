@@ -5,6 +5,10 @@ import nl.inholland.Bank.API.model.AccountStatus;
 import nl.inholland.Bank.API.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 @Service
 public class AccountService {
 
@@ -16,8 +20,17 @@ public class AccountService {
         this.userService = userService;
     }
 
-    public Iterable<Account> getAllAccounts() {
-        return accountRepository.findAll();
+    public Iterable<Account> getAllAccounts(int limit, int offset) {
+        Iterable<Account> accountList = accountRepository.findAll();
+        int count = 0;
+        List<Account> result = new ArrayList<>();
+        for (Account account : accountList) {
+            if (count >= offset && count < offset + limit) {
+                result.add(account);
+            }
+            count++;
+        }
+        return result;
     }
 
     public Account getAccountByIban(String iban) {
@@ -36,5 +49,24 @@ public class AccountService {
         Account updateAccount = accountRepository.findAccountByIban(iban);
         updateAccount.setAccountStatus(accountStatus);
         accountRepository.save(updateAccount);
+    }
+
+    public String generateIBAN() {
+        // Generate a random IBAN (Example: NL00INHO0123456789)
+        String countryCode = "NL";
+        String code = "00";
+        String bankCode = "INHB";
+        String accountNumber = generateRandomNumberString(10);
+        return countryCode + code + bankCode + accountNumber;
+    }
+
+    private String generateRandomNumberString(int length) {
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int digit = random.nextInt(10);
+            sb.append(digit);
+        }
+        return sb.toString();
     }
 }
