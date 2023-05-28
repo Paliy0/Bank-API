@@ -12,7 +12,10 @@ import org.springframework.web.bind.annotation.*;
 
 import nl.inholland.Bank.API.service.UserService;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 
 @RestController
@@ -32,10 +35,19 @@ public class UserController {
             @RequestParam(defaultValue = "0") int skip,
             @RequestParam(defaultValue = "50") int limit) {
         try{
-            // do something with skip and limit
+            if (skip < 0 || limit <= 0) {
+                return ResponseEntity.badRequest().build();
+            }
 
-            return ResponseEntity.ok().body(userService.getAllUsers());
+            Iterable<User> users = userService.getAllUsers();
 
+            // Perform pagination logic
+            List<User> paginatedUsers = StreamSupport.stream(users.spliterator(), false)
+                    .skip(skip)
+                    .limit(limit)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok().body(paginatedUsers);
         }catch(Exception e){
             return ResponseEntity.notFound().build();
         }
