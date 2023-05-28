@@ -5,6 +5,7 @@ import nl.inholland.Bank.API.model.AccountStatus;
 import nl.inholland.Bank.API.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -51,22 +52,75 @@ public class AccountService {
         accountRepository.save(updateAccount);
     }
 
-    public String generateIBAN() {
-        // Generate a random IBAN (Example: NL00INHO0123456789)
+//    public String generateIBAN() {
+//        // Generate a random IBAN (Example: NLxxINHO0xxxxxxxxx)
+//        Random random = new Random();
+//        StringBuilder sb = new StringBuilder();
+//        StringBuilder sb2 = new StringBuilder();
+//        for (int i = 0; i < 2; i++) {
+//            int code = random.nextInt(9);
+//            sb.append(code);
+//        }
+//
+//        for (int i = 0; i < 9; i++) {
+//            int accountNumber = random.nextInt(9);
+//            sb2.append(accountNumber);
+//        }
+//
+//        String countryCode = "NL";
+//        String code = sb.toString();
+//        String bankCode = "INHO0";
+//        String accountNumber = sb2.toString();
+//
+//        return countryCode + code + bankCode + accountNumber;
+//    }
+
+    public static String generateIBAN() {
         String countryCode = "NL";
-        String code = "00";
-        String bankCode = "INHB";
-        String accountNumber = generateRandomNumberString(10);
-        return countryCode + code + bankCode + accountNumber;
+        String bankCode = "INHO";
+        String accountNumber = generateRandomAccountNumber();
+
+        String iban = countryCode + "00" + bankCode + "0" + accountNumber;
+        iban = countryCode + calculateCheckDigits(iban) + bankCode + "0" + accountNumber;
+
+        return iban;
     }
 
-    private String generateRandomNumberString(int length) {
+    private static String generateRandomAccountNumber() {
         Random random = new Random();
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < length; i++) {
-            int digit = random.nextInt(10);
-            sb.append(digit);
+        for (int i = 0; i < 9; i++) {
+            int accountNumber = random.nextInt(10);
+            sb.append(accountNumber);
         }
         return sb.toString();
     }
+
+    //chatGPT method following the official IBAN creation algorithm
+    private static String calculateCheckDigits(String iban) {
+        iban = iban.substring(4) + iban.substring(0, 2) + "00";
+
+        // Convert letters to numbers (A = 10, B = 11, etc.)
+        StringBuilder numericIBAN = new StringBuilder();
+        for (int i = 0; i < iban.length(); i++) {
+            char c = iban.charAt(i);
+            if (Character.isDigit(c)) {
+                numericIBAN.append(c);
+            } else {
+                int numericValue = Character.getNumericValue(c);
+                numericIBAN.append(numericValue);
+            }
+        }
+
+        // Perform mod-97 operation on the numeric IBAN
+        BigInteger ibanNumber = new BigInteger(numericIBAN.toString());
+        BigInteger mod97 = ibanNumber.mod(BigInteger.valueOf(97));
+        int checkDigits = 98 - mod97.intValue();
+
+        // Format the check digits to always have two digits
+        String formattedCheckDigits = String.format("%02d", checkDigits);
+
+        return formattedCheckDigits;
+    }
+
 }

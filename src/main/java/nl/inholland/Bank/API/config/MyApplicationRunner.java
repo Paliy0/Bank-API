@@ -29,7 +29,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         user.setPassword("password");
         user.setEmail("sasacrow@gmail.com");
         user.setBirthdate("14 may");
-        user.setStreetName("schoonzichtlaan");
+        user.setStreetName("Schoonzichtlaan");
         user.setHouseNumber(8);
         user.setZipCode("2015 CL");
         user.setCity("Haarlem");
@@ -41,6 +41,7 @@ public class MyApplicationRunner implements ApplicationRunner {
 
         Account account = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user);
         account.setIban(accountService.generateIBAN());
+        //account.setIban("NL01INHO0000000001");
         accountService.saveAccount(account);
     }
 }

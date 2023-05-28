@@ -59,7 +59,7 @@ public class AccountController {
     /**
      * Get an IBAN by Customer Name
      * HTTP Method: GET
-     * URL: /accounts/getIbanByCustomerName?firstName=accountHolderFirstName
+     * URL: /accounts/getIbanByCustomerName?firstName={accountHolderFirstName}
      */
     @GetMapping(value = "/getIbanByCustomerName", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<Account>> getIbanByCustomerName(@RequestParam String firstName) {
