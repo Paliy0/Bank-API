@@ -1,20 +1,8 @@
-package nl.inholland.Bank.API.model;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+package nl.inholland.Bank.API.model.dto;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-@Entity
-@Table(name="transactions")
-public class Transaction {
-
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_seq")
-    @Id
-    private Long id;
+public class TransactionRequestDTO {
     private LocalDateTime timestamp;
     private String fromAccountIban;
     private String toAccountIban;
@@ -22,14 +10,6 @@ public class Transaction {
     private String description;
     private int userId;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
     public String getTimestamp() {
         DateTimeFormatter myDateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         String formattedDatestamp = timestamp.format(myDateTimeFormatter);
@@ -79,24 +59,4 @@ public class Transaction {
     public void setUserId(int userId) {
         this.userId = userId;
     }
-
-    // store the date and time at which the transaction was created
-    public Transaction() {
-        timestamp = LocalDateTime.now();
-    }
-
-    @Override
-    public String toString() {
-        final StringBuffer sb = new StringBuffer("Transaction{");
-        sb.append("id=").append(id);
-        sb.append(", timestamp=").append(timestamp).append('\'');
-        sb.append(", from=").append(fromAccountIban).append('\'');
-        sb.append(", to=").append(toAccountIban).append('\'');
-        sb.append(", amount=").append(amount).append('\'');
-        sb.append(", description=").append(description).append('\'');
-        sb.append(", userId=").append(userId).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-    
 }
