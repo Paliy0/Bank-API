@@ -3,10 +3,13 @@ package nl.inholland.Bank.API.config;
 import jakarta.transaction.Transactional;
 import nl.inholland.Bank.API.model.*;
 import nl.inholland.Bank.API.service.AccountService;
+import nl.inholland.Bank.API.service.TransactionService;
 import nl.inholland.Bank.API.service.UserService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 
 @Component
 @Transactional
@@ -14,10 +17,12 @@ public class MyApplicationRunner implements ApplicationRunner {
 
     private final AccountService accountService;
     private final UserService userService;
+    private final TransactionService transactionService;
 
-    public MyApplicationRunner(AccountService accountService, UserService userService) {
+    public MyApplicationRunner(AccountService accountService, UserService userService, TransactionService transactionService) {
         this.accountService = accountService;
         this.userService = userService;
+        this.transactionService = transactionService;
     }
 
     @Override
