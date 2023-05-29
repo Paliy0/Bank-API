@@ -1,28 +1,47 @@
 package nl.inholland.Bank.API.config;
 
-import java.time.LocalDateTime;
-
+import jakarta.transaction.Transactional;
+import nl.inholland.Bank.API.model.*;
+import nl.inholland.Bank.API.service.AccountService;
+import nl.inholland.Bank.API.service.UserService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-
-import jakarta.transaction.Transactional;
-import nl.inholland.Bank.API.model.Transaction;
-import nl.inholland.Bank.API.service.TransactionService;
-
 
 @Component
 @Transactional
 public class MyApplicationRunner implements ApplicationRunner {
 
-    private final TransactionService transactionService;
+    private final AccountService accountService;
+    private final UserService userService;
 
-    public MyApplicationRunner(TransactionService transactionService) {
-        this.transactionService = transactionService;
+    public MyApplicationRunner(AccountService accountService, UserService userService) {
+        this.accountService = accountService;
+        this.userService = userService;
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+
+        User user = new User();
+        user.setFirstName("sasa");
+        user.setLastName("crow");
+        user.setPassword("password");
+        user.setEmail("sasacrow@gmail.com");
+        user.setBirthdate("14 may");
+        user.setStreetName("schoonzichtlaan");
+        user.setHouseNumber(8);
+        user.setZipCode("2015 CL");
+        user.setCity("Haarlem");
+        user.setCountry("NL");
+        user.setDailyLimit(100);
+        user.setTransactionLimit(100);
+        user.setRole(Role.ROLE_USER);
+        userService.add(user);
+
+        Account account = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user);
+        account.setIban(accountService.generateIBAN());
+        accountService.saveAccount(account);
 
         Transaction transaction1 = new Transaction();
         transaction1.setTimestamp(LocalDateTime.now());
@@ -43,5 +62,4 @@ public class MyApplicationRunner implements ApplicationRunner {
         transactionService.performTransaction(transaction1);
         transactionService.performTransaction(transaction2);
     }
-
 }
