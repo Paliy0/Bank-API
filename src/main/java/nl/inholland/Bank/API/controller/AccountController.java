@@ -2,7 +2,10 @@ package nl.inholland.Bank.API.controller;
 
 import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.AccountStatus;
+import nl.inholland.Bank.API.model.dto.AccountRequestDTO;
+import nl.inholland.Bank.API.model.dto.StatusAccountRequestDTO;
 import nl.inholland.Bank.API.service.AccountService;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/accounts", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AccountController {
     private final AccountService accountService;
+    private final ModelMapper modelMapper;
 
     public AccountController(AccountService accountService) {
         this.accountService = accountService;
+        this.modelMapper = new ModelMapper();
     }
 
     /**
@@ -87,9 +92,10 @@ public class AccountController {
      * URL: /accounts
      */
     @PostMapping
-    public ResponseEntity<?> insertAccount(@RequestBody Account newAccount) {
+    public ResponseEntity<Object> insertAccount(@RequestBody AccountRequestDTO accountRequest) {
         try {
-            accountService.saveAccount(newAccount);
+            Account account = modelMapper.map(accountRequest, Account.class);
+            accountService.saveAccount(account);
             return ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
@@ -102,9 +108,11 @@ public class AccountController {
      * URL: /accounts/accountStatus/{iban}
      */
     @PutMapping(value = "/accountStatus/{iban}")
-    public ResponseEntity<?> updateAccountStatus(@PathVariable String iban, @RequestBody AccountStatus accountStatus) {
+    public ResponseEntity<?> updateAccountStatus(@PathVariable String iban, @RequestBody StatusAccountRequestDTO accountStatusRequest) {
         try {
-            accountService.updateAccountStatus(iban, accountStatus);
+            AccountStatus newAccountStatus = AccountStatus.valueOf(accountStatusRequest.accountStatus());
+
+            accountService.updateAccountStatus(iban, newAccountStatus);
             return ResponseEntity.status(HttpStatus.OK).body("Updated successfully");
             //return ResponseEntity.ok().build();
         } catch (Exception e) {
