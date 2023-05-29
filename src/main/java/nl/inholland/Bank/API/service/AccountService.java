@@ -44,6 +44,10 @@ public class AccountService {
     }
 
     public void saveAccount(Account newAccount) {
+        if (newAccount.getIban() == null){
+            newAccount.setIban(generateIBAN());
+        }
+
         accountRepository.save(newAccount);
     }
 
@@ -76,13 +80,17 @@ public class AccountService {
 //        return countryCode + code + bankCode + accountNumber;
 //    }
 
-    public static String generateIBAN() {
+    public String generateIBAN() {
+        String iban;
         String countryCode = "NL";
         String bankCode = "INHO";
-        String accountNumber = generateRandomAccountNumber();
 
-        String iban = countryCode + "00" + bankCode + "0" + accountNumber;
-        iban = countryCode + calculateCheckDigits(iban) + bankCode + "0" + accountNumber;
+        do {
+            String accountNumber = generateRandomAccountNumber();
+
+            iban = countryCode + "00" + bankCode + "0" + accountNumber;
+            iban = countryCode + calculateCheckDigits(iban) + bankCode + "0" + accountNumber;
+        } while(accountRepository.existsAccountByIbanEquals(iban));
 
         return iban;
     }

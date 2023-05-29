@@ -1,7 +1,17 @@
 package nl.inholland.Bank.API.model.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import nl.inholland.Bank.API.model.AccountStatus;
 import nl.inholland.Bank.API.model.AccountType;
+import nl.inholland.Bank.API.model.User;
 
-public record AccountRequestDTO(AccountStatus accountStatus, AccountType accountType, Long id) {
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class AccountRequestDTO {
+    private AccountStatus accountStatus;
+    private AccountType accountType;
+    private User accountHolder;
 }

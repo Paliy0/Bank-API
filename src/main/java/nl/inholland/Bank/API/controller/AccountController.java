@@ -3,6 +3,7 @@ package nl.inholland.Bank.API.controller;
 import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.AccountStatus;
 import nl.inholland.Bank.API.model.dto.AccountRequestDTO;
+import nl.inholland.Bank.API.model.dto.FindAccountResponseDTO;
 import nl.inholland.Bank.API.model.dto.StatusAccountRequestDTO;
 import nl.inholland.Bank.API.service.AccountService;
 import org.modelmapper.ModelMapper;
@@ -10,6 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/accounts", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -71,16 +75,21 @@ public class AccountController {
      * URL: /accounts/getIbanByCustomerName?firstName={accountHolderFirstName}
      */
     @GetMapping(value = "/getIbanByCustomerName", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Iterable<Account>> getIbanByCustomerName(@RequestParam String firstName) {
+    public ResponseEntity<Iterable<FindAccountResponseDTO>> getIbanByCustomerName(@RequestParam String firstName) {
         try {
-            Iterable<Account> account = accountService.getIbanByCustomerName(firstName);
+            Iterable<Account> accounts = accountService.getIbanByCustomerName(firstName);
+            List<FindAccountResponseDTO> responseDTOS = new ArrayList<>();
 
-            if (account != null) {
-                return ResponseEntity.ok().body(accountService.getIbanByCustomerName(firstName));
+            for (Account account : accounts) {
+                FindAccountResponseDTO responseDTO = modelMapper.map(account, FindAccountResponseDTO.class);
+                responseDTO.setUser(account.getAccountHolder().getFirstName() + " " + account.getAccountHolder().getLastName());
+                responseDTOS.add(responseDTO);
+            }
+            if (!responseDTOS.isEmpty()) {
+                return ResponseEntity.ok().body(responseDTOS);
             } else {
                 return ResponseEntity.notFound().build();
             }
-
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

@@ -8,6 +8,6 @@ import java.time.LocalDate;
 
 //this should be used for /getAllAccounts and /getAccountByIBAN
 //change user to userDTO
-public record AccountResponseDTO (String iban, double balance, double absoluteLimit, LocalDate createdAt, AccountType accountType, AccountStatus accountStatus,  User user) {
+public record AccountResponseDTO (Long id, String iban, double balance, double absoluteLimit, LocalDate createdAt, AccountType accountType, AccountStatus accountStatus,  User user) {
 
 }

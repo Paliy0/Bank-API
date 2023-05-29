@@ -13,4 +13,6 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
     Account findAccountByIban(@Param("iban") String iban);
 
     Iterable<Account> findIbanByAccountHolder_FirstName(@Param("firstName") String firstName);
+
+    boolean existsAccountByIbanEquals(@Param("iban") String iban);
 }

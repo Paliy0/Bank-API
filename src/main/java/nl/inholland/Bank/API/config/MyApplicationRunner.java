@@ -44,6 +44,22 @@ public class MyApplicationRunner implements ApplicationRunner {
         user.setRole(Role.ROLE_EMPLOYEE);
         userService.add(user);
 
+        User user1 = new User();
+        user1.setFirstName("Sasa");
+        user1.setLastName("Crow");
+        user1.setPassword("Test123!");
+        user1.setEmail("inholland1@gmail.com");
+        user1.setBirthdate("01/01/2011");
+        user1.setStreetName("Bijdorplaan");
+        user1.setHouseNumber(15);
+        user1.setZipCode("2015 CE");
+        user1.setCity("Haarlem");
+        user1.setCountry("Netherlands");
+        user1.setDailyLimit(10000);
+        user1.setTransactionLimit(10000);
+        user1.setRole(Role.ROLE_USER);
+        userService.add(user1);
+
         Account account = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user);
         //account.setIban(accountService.generateIBAN());
         account.setIban("NL01INHO0000000001");
