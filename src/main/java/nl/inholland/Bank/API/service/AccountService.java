@@ -22,7 +22,8 @@ public class AccountService {
     }
 
     public Iterable<Account> getAllAccounts(int limit, int offset) {
-        Iterable<Account> accountList = accountRepository.findAll();
+        //Iterable<Account> accountList = accountRepository.findAll();
+        Iterable<Account> accountList = accountRepository.findAllByIbanNot("NL01INHO0000000001");
         int count = 0;
         List<Account> result = new ArrayList<>();
         for (Account account : accountList) {

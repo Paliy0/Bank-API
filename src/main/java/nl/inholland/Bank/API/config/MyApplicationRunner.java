@@ -24,24 +24,24 @@ public class MyApplicationRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
 
         User user = new User();
-        user.setFirstName("sasa");
-        user.setLastName("crow");
+        user.setFirstName("Bank");
+        user.setLastName("INHOLLAND");
         user.setPassword("password");
-        user.setEmail("sasacrow@gmail.com");
-        user.setBirthdate("14 may");
-        user.setStreetName("Schoonzichtlaan");
-        user.setHouseNumber(8);
-        user.setZipCode("2015 CL");
+        user.setEmail("inholland@gmail.com");
+        user.setBirthdate("01/01/2001");
+        user.setStreetName("Bijdorplaan");
+        user.setHouseNumber(15);
+        user.setZipCode("2015 CE");
         user.setCity("Haarlem");
-        user.setCountry("NL");
-        user.setDailyLimit(100);
-        user.setTransactionLimit(100);
-        user.setRole(Role.ROLE_USER);
+        user.setCountry("Netherlands");
+        user.setDailyLimit(10000);
+        user.setTransactionLimit(10000);
+        user.setRole(Role.ROLE_EMPLOYEE);
         userService.add(user);
 
         Account account = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user);
-        account.setIban(accountService.generateIBAN());
-        //account.setIban("NL01INHO0000000001");
+        //account.setIban(accountService.generateIBAN());
+        account.setIban("NL01INHO0000000001");
         accountService.saveAccount(account);
     }
 }

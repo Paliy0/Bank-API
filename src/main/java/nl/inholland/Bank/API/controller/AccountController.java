@@ -45,6 +45,10 @@ public class AccountController {
         try {
             Account account = accountService.getAccountByIban(iban);
 
+            if (account.getIban().equals("NL01INHO0000000001")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Account with IBAN: " + iban + " is not accessible to anyone");
+            }
+
             if (account != null) {
                 return ResponseEntity.ok().body(account);
             } else {
