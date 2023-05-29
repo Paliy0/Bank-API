@@ -1,23 +1,17 @@
-package nl.inholland.Bank.API.model;
+package nl.inholland.Bank.API.model.dto;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import nl.inholland.Bank.API.model.Role;
 
-@Entity
-@Table(name = "users")
-public class User {
+public class UserDTO {
 
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
-    @Id
-    private Long id;
 
     private String firstName;
     private String lastName;
     private String email;
+
     private String password;
     private String birthdate;
     private String streetName;
@@ -29,16 +23,8 @@ public class User {
     private int transactionLimit;
     private Role role;
 
-
     //list of accounts
 
-    public Long getId() {
-        return this.id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getFirstName() {
         return this.firstName;
@@ -118,22 +104,6 @@ public class User {
         this.country = country;
     }
 
-    public int getDailyLimit() {
-        return this.dailyLimit;
-    }
-
-    public void setDailyLimit(int dailyLimit) {
-        this.dailyLimit = dailyLimit;
-    }
-
-    public int getTransactionLimit() {
-        return this.transactionLimit;
-    }
-
-    public void setTransactionLimit(int transactionLimit) {
-        this.transactionLimit = transactionLimit;
-    }
-
     public Role getRole() {
         return this.role;
     }
@@ -142,16 +112,5 @@ public class User {
         this.role = role;
     }
 
-    @Override
-    public String toString() {
-        final StringBuffer sb = new StringBuffer("User{");
-        sb.append("id=").append(id);
-        sb.append(", firstName='").append(firstName).append('\'');
-        sb.append(", lastName='").append(lastName).append('\'');
-        sb.append(", password='").append(password).append('\'');
-        sb.append(", roles=").append(role);
-        sb.append('}');
-        return sb.toString();
-    }
 
 }
