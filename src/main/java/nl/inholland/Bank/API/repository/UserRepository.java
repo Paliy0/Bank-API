@@ -1,12 +1,12 @@
 package nl.inholland.Bank.API.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import nl.inholland.Bank.API.model.User;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import nl.inholland.Bank.API.model.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends CrudRepository<User, Long> {
+    User findByEmail(String username);
 
-    User findByEmail(String email);
 }
