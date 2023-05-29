@@ -30,11 +30,7 @@ public class Transaction {
         this.id = id;
     }
     
-    public String getTimestamp() {
-        DateTimeFormatter myDateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        String formattedDatestamp = timestamp.format(myDateTimeFormatter);
-        return formattedDatestamp;
-    }
+    public LocalDateTime getTimestamp() { return timestamp; }
 
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;

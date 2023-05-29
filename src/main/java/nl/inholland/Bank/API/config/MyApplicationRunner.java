@@ -25,6 +25,7 @@ public class MyApplicationRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
 
         Transaction transaction1 = new Transaction();
+        transaction1.setTimestamp(LocalDateTime.now());
         transaction1.setFromAccountIban("NL47INGB1234567890");
         transaction1.setToAccountIban("NL56ABNA0987654321");
         transaction1.setAmount(50);
@@ -32,6 +33,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         transaction1.setUserId(1);
 
         Transaction transaction2 = new Transaction();
+        transaction2.setTimestamp(LocalDateTime.now());
         transaction2.setFromAccountIban("NL91ABNA0417164300");
         transaction2.setToAccountIban("NL69RABO0123456789");
         transaction2.setAmount(25);

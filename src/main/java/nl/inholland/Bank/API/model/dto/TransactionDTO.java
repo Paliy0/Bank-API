@@ -1,8 +1,12 @@
 package nl.inholland.Bank.API.model.dto;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
-public class TransactionRequestDTO {
+import java.time.LocalDateTime;
+
+public class TransactionDTO {
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_seq")
+
     private LocalDateTime timestamp;
     private String fromAccountIban;
     private String toAccountIban;
@@ -10,11 +14,7 @@ public class TransactionRequestDTO {
     private String description;
     private int userId;
 
-    public String getTimestamp() {
-        DateTimeFormatter myDateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        String formattedDatestamp = timestamp.format(myDateTimeFormatter);
-        return formattedDatestamp;
-    }
+    public LocalDateTime getTimestamp() { return timestamp; }
 
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;

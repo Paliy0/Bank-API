@@ -1,8 +1,11 @@
 package nl.inholland.Bank.API.controller;
 
 import nl.inholland.Bank.API.model.Transaction;
+import nl.inholland.Bank.API.model.dto.TransactionDTO;
 import nl.inholland.Bank.API.service.TransactionService;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +17,12 @@ import java.util.List;
 @RequestMapping(value = "/transactions", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TransactionController {
     private final TransactionService transactionService;
+
+    private final ModelMapper modelMapper;
     
     public TransactionController(TransactionService transactionService){
         this.transactionService = transactionService;
+        modelMapper = new ModelMapper();
     }
 
     @GetMapping
@@ -29,10 +35,12 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<?> postTransaction(@RequestBody Transaction newTransaction) {
+    public ResponseEntity<Object> postTransaction(@RequestBody TransactionDTO newTransaction) {
         try {
-            transactionService.performTransaction(newTransaction);
-            return ResponseEntity.ok().build();
+            Transaction transaction = modelMapper.map(newTransaction, Transaction.class);
+            transactionService.performTransaction(transaction);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Transaction successful.");
+
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
@@ -50,6 +58,8 @@ public class TransactionController {
     @PostMapping(value = "/atm/deposit")
     public ResponseEntity<?> performDeposit(@RequestBody Transaction newDeposit) {
         try {
+
+
             transactionService.performTransaction(newDeposit);
             return ResponseEntity.ok().build();
         } catch (Exception e) {

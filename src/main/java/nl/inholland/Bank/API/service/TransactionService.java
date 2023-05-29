@@ -7,7 +7,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.stereotype.Service;  
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class TransactionService {
@@ -26,8 +28,13 @@ public class TransactionService {
         return transactionRepository.findById(id);
     }
 
-    public void performTransaction(Transaction newTransaction) {
-        transactionRepository.save(newTransaction);
+    public Transaction performTransaction(Transaction newTransaction) {
+        if (newTransaction != null){
+            transactionRepository.save(newTransaction);
+        } else {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "error, transaction was null");
+        }
+        return newTransaction;
     }
 
     public List<Transaction> getUserTransactionsByDay(Long userId, LocalDateTime date){
