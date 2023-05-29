@@ -40,7 +40,6 @@ public class TransactionController {
             Transaction transaction = modelMapper.map(newTransaction, Transaction.class);
             transactionService.performTransaction(transaction);
             return ResponseEntity.status(HttpStatus.CREATED).body("Transaction successful.");
-
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
@@ -56,22 +55,22 @@ public class TransactionController {
     }
 
     @PostMapping(value = "/atm/deposit")
-    public ResponseEntity<?> performDeposit(@RequestBody Transaction newDeposit) {
+    public ResponseEntity<?> performDeposit(@RequestBody TransactionDTO newDeposit) {
         try {
-
-
-            transactionService.performTransaction(newDeposit);
-            return ResponseEntity.ok().build();
+            Transaction deposit = modelMapper.map(newDeposit, Transaction.class);
+            transactionService.performTransaction(deposit);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Deposit successful.");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }
 
     @PostMapping(value = "/atm/withdrawal")
-    public ResponseEntity<?> performWithdrawal(@RequestBody Transaction newWithdrawal) {
+    public ResponseEntity<?> performWithdrawal(@RequestBody TransactionDTO newWithdrawal) {
         try {
-            transactionService.performTransaction(newWithdrawal);
-            return ResponseEntity.ok().build();
+            Transaction withdrawal = modelMapper.map(newWithdrawal, Transaction.class);
+            transactionService.performTransaction(withdrawal);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Withdrawal succesful.");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
