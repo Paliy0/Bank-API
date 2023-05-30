@@ -2,6 +2,7 @@ package nl.inholland.Bank.API.service;
 
 import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.AccountStatus;
+import nl.inholland.Bank.API.model.AccountType;
 import nl.inholland.Bank.API.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,6 @@ public class AccountService {
     }
 
     public Iterable<Account> getAllAccounts(int limit, int offset) {
-        //Iterable<Account> accountList = accountRepository.findAll();
         Iterable<Account> accountList = accountRepository.findAllByIbanNot("NL01INHO0000000001");
         int count = 0;
         List<Account> result = new ArrayList<>();
@@ -44,7 +44,7 @@ public class AccountService {
     }
 
     public void saveAccount(Account newAccount) {
-        if (newAccount.getIban() == null){
+        if (newAccount.getIban() == null) {
             newAccount.setIban(generateIBAN());
         }
 
@@ -55,6 +55,18 @@ public class AccountService {
         Account updateAccount = accountRepository.findAccountByIban(iban);
         updateAccount.setAccountStatus(accountStatus);
         accountRepository.save(updateAccount);
+    }
+
+    public boolean hasAccount(Long id) {
+        return accountRepository.existsAccountByAccountHolder_Id(id);
+    }
+
+    public boolean hasCurrentAccount(Long id, AccountType accountType) {
+        return accountRepository.existsAccountByAccountHolder_IdAndAccountTypeEquals(id, accountType);
+    }
+
+    public Long countAccounts(Long id) {
+        return accountRepository.countAccountByAccountHolder_Id(id);
     }
 
 //    public String generateIBAN() {
@@ -90,7 +102,7 @@ public class AccountService {
 
             iban = countryCode + "00" + bankCode + "0" + accountNumber;
             iban = countryCode + calculateCheckDigits(iban) + bankCode + "0" + accountNumber;
-        } while(accountRepository.existsAccountByIbanEquals(iban));
+        } while (accountRepository.existsAccountByIbanEquals(iban));
 
         return iban;
     }

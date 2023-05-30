@@ -2,6 +2,7 @@ package nl.inholland.Bank.API.controller;
 
 import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.AccountStatus;
+import nl.inholland.Bank.API.model.AccountType;
 import nl.inholland.Bank.API.model.dto.AccountRequestDTO;
 import nl.inholland.Bank.API.model.dto.FindAccountResponseDTO;
 import nl.inholland.Bank.API.model.dto.StatusAccountRequestDTO;
@@ -101,11 +102,33 @@ public class AccountController {
      * URL: /accounts
      */
     @PostMapping
-    public ResponseEntity<Object> insertAccount(@RequestBody AccountRequestDTO accountRequest) {
+    public ResponseEntity<String> insertAccount(@RequestBody AccountRequestDTO accountRequest) {
         try {
+            Long userId = accountRequest.getAccountHolder().getId();
+            boolean hasAccount = accountService.hasAccount(userId);
+            AccountType accountType = accountRequest.getAccountType();
+
+            if (hasAccount) {
+                if (accountType.equals(AccountType.SAVINGS)) {
+                    boolean hasCurrentAccount = accountService.hasCurrentAccount(userId, AccountType.CURRENT);
+                    if (!hasCurrentAccount) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot create a savings account without a current account");
+                    }
+                } else if (accountType.equals(AccountType.CURRENT)) {
+                    Long accountCount = accountService.countAccounts(userId);
+                    if (accountCount >= 2) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot add a new account, user already has two accounts");
+                    }
+                } else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot add a new account, user already has two accounts");
+                }
+            }
+
             Account account = modelMapper.map(accountRequest, Account.class);
             accountService.saveAccount(account);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully");
+            Account createdAccount = accountService.getAccountByIban(account.getIban());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully: " + createdAccount.toString());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }
@@ -117,13 +140,13 @@ public class AccountController {
      * URL: /accounts/accountStatus/{iban}
      */
     @PutMapping(value = "/accountStatus/{iban}")
-    public ResponseEntity<?> updateAccountStatus(@PathVariable String iban, @RequestBody StatusAccountRequestDTO accountStatusRequest) {
+    public ResponseEntity<String> updateAccountStatus(@PathVariable String iban, @RequestBody StatusAccountRequestDTO accountStatusRequest) {
         try {
             AccountStatus newAccountStatus = AccountStatus.valueOf(accountStatusRequest.accountStatus());
-
             accountService.updateAccountStatus(iban, newAccountStatus);
-            return ResponseEntity.status(HttpStatus.OK).body("Updated successfully");
-            //return ResponseEntity.ok().build();
+            Account createdAccount = accountService.getAccountByIban(iban);
+
+            return ResponseEntity.status(HttpStatus.OK).body("Updated successfully: " + createdAccount.toString());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }

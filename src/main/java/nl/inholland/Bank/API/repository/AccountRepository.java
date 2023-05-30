@@ -1,6 +1,7 @@
 package nl.inholland.Bank.API.repository;
 
 import nl.inholland.Bank.API.model.Account;
+import nl.inholland.Bank.API.model.AccountType;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,4 +16,10 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
     Iterable<Account> findIbanByAccountHolder_FirstName(@Param("firstName") String firstName);
 
     boolean existsAccountByIbanEquals(@Param("iban") String iban);
+
+    boolean existsAccountByAccountHolder_Id(@Param("id") Long id);
+
+    boolean existsAccountByAccountHolder_IdAndAccountTypeEquals(Long accountHolder_id, AccountType accountType);
+
+    long countAccountByAccountHolder_Id(@Param("id") Long id);
 }
