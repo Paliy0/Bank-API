@@ -2,14 +2,17 @@ package nl.inholland.Bank.API.service;
 
 import nl.inholland.Bank.API.model.User;
 import nl.inholland.Bank.API.model.dto.UserDLimitDTO;
-import nl.inholland.Bank.API.model.dto.UserDTO;
+import nl.inholland.Bank.API.model.dto.UserRequestDTO;
+import nl.inholland.Bank.API.model.dto.UserResponseDTO;
 import nl.inholland.Bank.API.model.dto.UserTLimitDTO;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import nl.inholland.Bank.API.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,11 +20,12 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-    //private final ModelMapper modelMapper =  new ModelMapper();
+    private final ModelMapper modelMapper;
 
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
+        this.modelMapper = new ModelMapper();
     }
 
     public User add(User user) {
@@ -32,51 +36,66 @@ public class UserService {
         }
         return user;
     }
-    public User update(UserDTO newUserData, Long id){
-        Optional<User> response = getUserById(id);
+    public boolean update(UserRequestDTO newUserData, Long id){
+        Optional<User> response = userRepository.findById(id);
         User currentUser = response.get();
 
         if(currentUser != null){
-            currentUser.setFirstName(newUserData.getFirstName());
-            currentUser.setLastName(newUserData.getLastName());
-            currentUser.setEmail(newUserData.getEmail());
-            currentUser.setPassword(newUserData.getPassword());
-            currentUser.setCity(newUserData.getCity());
-            currentUser.setStreetName(newUserData.getStreetName());
-            currentUser.setHouseNumber(newUserData.getHouseNumber());
-            currentUser.setZipCode(newUserData.getZipCode());
-            currentUser.setCountry(newUserData.getCountry());
-            currentUser.setBirthdate(newUserData.getBirthdate());
+            currentUser.setFirstName(newUserData.firstName());
+            currentUser.setLastName(newUserData.lastName());
+            currentUser.setEmail(newUserData.email());
+            currentUser.setPassword(newUserData.password());
+            currentUser.setPhoneNumber(newUserData.phoneNumber());
+            currentUser.setBsn(newUserData.bsn());
+            currentUser.setCity(newUserData.city());
+            currentUser.setStreetName(newUserData.streetName());
+            currentUser.setHouseNumber(newUserData.houseNumber());
+            currentUser.setZipCode(newUserData.zipCode());
+            currentUser.setCountry(newUserData.country());
+            currentUser.setBirthdate(newUserData.birthdate());
         }
 
-        return userRepository.save(currentUser);
+        User updated = userRepository.save(currentUser);
+
+        if(updated != null) {
+            return true;
+        }else{
+            return false;
+        }
     }
-    public List<User> getAllUsers(){
-        return (List<User>) userRepository.findAll();
+    public List<UserResponseDTO> getAllUsers(){
+        //get users
+        Iterable<User> users = userRepository.findAll();
+        //only return the required response data with the UserResponseDTO
+        List<UserResponseDTO> responseUsers = new ArrayList<>();
+        for(User user : users){
+            UserResponseDTO userResponse = new UserResponseDTO(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(), user.getBsn(), user.getBirthdate(), user.getStreetName(), user.getHouseNumber(), user.getZipCode(), user.getCity(), user.getCountry(), user.getDailyLimit(), user.getTransactionLimit(), user.getRole());
+            responseUsers.add(userResponse);
+        }
+        return responseUsers;
     }
 
     public Optional<User> getUserById(Long id){
         return userRepository.findById(id);
     }
-    // Get by Username
-    public User getUserByEmail(String username) {
-        return userRepository.findByEmail(username);
+    // Get by Email
+    //return User instead of response because password needed for login???
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
+
+    //still needs to be calculated with the transactions
     public UserDLimitDTO getDailyLimit(Long id){
         Optional<User> response = userRepository.findById(id);
         User user = response.get();
-        UserDLimitDTO dailyLimit = new UserDLimitDTO();
-        dailyLimit.setId(id);
-        dailyLimit.setDailyLimit(String.valueOf(user.getDailyLimit()));
+        UserDLimitDTO dailyLimit = new UserDLimitDTO(user.getId(), user.getDailyLimit());
         return dailyLimit;
     }
 
     public UserTLimitDTO getTransactionLimit(Long id){
         Optional<User> response = userRepository.findById(id);
         User user = response.get();
-        UserTLimitDTO transactionLimit = new UserTLimitDTO();
-        transactionLimit.setId(id);
-        transactionLimit.setTransactionLimit(String.valueOf(user.getTransactionLimit()));
+        UserTLimitDTO transactionLimit = new UserTLimitDTO(user.getId(), user.getTransactionLimit());
         return transactionLimit;
     }
 }

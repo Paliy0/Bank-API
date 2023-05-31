@@ -33,7 +33,9 @@ public class MyApplicationRunner implements ApplicationRunner {
         user.setLastName("crow");
         user.setPassword("password");
         user.setEmail("sasacrow@gmail.com");
-        user.setBirthdate("14 may");
+        user.setBsn("123456789");
+        user.setPhoneNumber("+314567890");
+        user.setBirthdate("2015-07-20");
         user.setStreetName("schoonzichtlaan");
         user.setHouseNumber(8);
         user.setZipCode("2015 CL");
