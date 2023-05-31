@@ -2,7 +2,8 @@ package nl.inholland.Bank.API.controller;
 
 import nl.inholland.Bank.API.model.Role;
 import nl.inholland.Bank.API.model.User;
-import nl.inholland.Bank.API.model.dto.UserDTO;
+import nl.inholland.Bank.API.model.dto.UserRequestDTO;
+import nl.inholland.Bank.API.model.dto.UserResponseDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,6 +20,8 @@ import java.util.stream.StreamSupport;
 
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
+
 @RequestMapping(value = "/users" , produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
@@ -30,8 +33,13 @@ public class UserController {
         this.modelMapper = new ModelMapper();
     }
 
+    /**
+     * Get all accounts
+     * HTTP Method: Get
+     * URL: /users
+     */
     @GetMapping
-    public ResponseEntity<Iterable<User>> getAllUsers(
+    public ResponseEntity<Iterable<UserResponseDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") int skip,
             @RequestParam(defaultValue = "50") int limit) {
         try{
@@ -39,10 +47,10 @@ public class UserController {
                 return ResponseEntity.badRequest().build();
             }
 
-            Iterable<User> users = userService.getAllUsers();
+            Iterable<UserResponseDTO> users = userService.getAllUsers();
 
             // Perform pagination logic
-            List<User> paginatedUsers = StreamSupport.stream(users.spliterator(), false)
+            List<UserResponseDTO> paginatedUsers = StreamSupport.stream(users.spliterator(), false)
                     .skip(skip)
                     .limit(limit)
                     .collect(Collectors.toList());
@@ -53,19 +61,41 @@ public class UserController {
         }
     }
 
+    /**
+     * Post a user
+     * HTTP Method: POST
+     * URL: /users
+     */
     @PostMapping
-    public ResponseEntity<Object> registerUser(@RequestBody UserDTO userRequest) {
+    public ResponseEntity<Object> registerUser(@RequestBody UserRequestDTO userRequest) {
         try {
             //check if new user detail is valid
-            if(!validateEmail(userRequest.getEmail())){
-                return  ResponseEntity.status(HttpStatus.CREATED).body("Bad request. User with this email already exists");
+            if(!validateEmail(userRequest.email())){
+                return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request. User with this email already exists");
             }
             if(!checkUserBody(userRequest)){
-                return  ResponseEntity.status(HttpStatus.CREATED).body("Bad request. Invalid User Information.");
+                return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request. Invalid User Information.");
             }
 
-            User newUser = modelMapper.map(userRequest, User.class);
+            //model mapper is not working with Record DTO classes????
+            //User newUser = modelMapper.map(userRequest, User.class);
+
+            User newUser = new User();
+            newUser.setFirstName(userRequest.firstName());
+            newUser.setLastName(userRequest.lastName());
+            newUser.setEmail(userRequest.email());
+            newUser.setPassword(userRequest.password());
+            newUser.setBsn(userRequest.bsn());
+            newUser.setPhoneNumber(userRequest.phoneNumber());
+            newUser.setBirthdate(userRequest.birthdate());
+            newUser.setStreetName(userRequest.streetName());
+            newUser.setHouseNumber(userRequest.houseNumber());
+            newUser.setCity(userRequest.city());
+            newUser.setZipCode(userRequest.zipCode());
+            newUser.setCountry(userRequest.country());
             newUser.setRole(Role.ROLE_USER);
+            newUser.setTransactionLimit(100);
+            newUser.setDailyLimit(200);
 
             userService.add(newUser);
 
@@ -74,17 +104,23 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }
     }
+
+    /**
+     * Update User information
+     * HTTP Method: PUT
+     * URL: users/updateInformation/{id}
+     */
     @PutMapping(value = "/updateInformation/{id}")
-    public ResponseEntity<Object> changeUserData(@PathVariable long id, @RequestBody UserDTO newUserData){
+    public ResponseEntity<Object> changeUserData(@PathVariable long id, @RequestBody UserRequestDTO newUserData){
         try{
             Optional<User> response = userService.getUserById(id);
             User user = response.get();
 
-            if(!validateEmailChange(newUserData.getEmail(), user.getEmail())){
-                return  ResponseEntity.status(HttpStatus.CREATED).body("Bad request. User with this email already exists or email is in wrong format");
+            if(!validateEmailChange(newUserData.email(), user.getEmail())){
+                return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request. User with this email already exists or email is in wrong format");
             }
             if(!checkUserBody(newUserData)){
-                return  ResponseEntity.status(HttpStatus.CREATED).body("Bad request. Invalid User Information.");
+                return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request. Invalid User Information.");
             }
             userService.update(newUserData, id);
 
@@ -94,6 +130,12 @@ public class UserController {
 
         }
     }
+
+    /**
+     * Get a User
+     * HTTP Method: Get
+     * URL: /users/{id}
+     */
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getLoggedInUser(@PathVariable long id) {
         try {
@@ -102,6 +144,12 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    /**
+     * Get a user's daily limit
+     * HTTP Method: GET
+     * URL: /users/dailyLimit/{id}
+     */
     @GetMapping(value = "dailyLimit/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getDailyLimitById(@PathVariable long id) {
         try {
@@ -111,6 +159,11 @@ public class UserController {
         }
     }
 
+    /**
+     * Get a user's transaction Limit
+     * HTTP Method: GET
+     * URL: /users/transactionLimit/{id}
+     */
     @GetMapping(value = "transactionLimit/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getTransactionLimitById(@PathVariable long id) {
         try {
@@ -120,16 +173,19 @@ public class UserController {
         }
     }
 
-    private boolean checkUserBody(UserDTO userBody) {
+    /**
+     * Checking Methods
+     */
+    private boolean checkUserBody(UserRequestDTO userBody) {
 
-        if (!(userBody.getFirstName().length() > 1 &&
-                userBody.getLastName().length() > 1 &&
-                userBody.getStreetName().length() > 2 &&
-                userBody.getHouseNumber() > 0 &&
-                userBody.getZipCode().length() > 3 &&
-                userBody.getCity().length() > 3 &&
-                userBody.getCountry().length() > 3 &&
-                isStrongPassword(userBody.getPassword()))
+        if (!(userBody.firstName().length() > 1 &&
+                userBody.lastName().length() > 1 &&
+                userBody.streetName().length() > 2 &&
+                userBody.houseNumber() > 0 &&
+                userBody.zipCode().length() > 3 &&
+                userBody.city().length() > 3 &&
+                userBody.country().length() > 3 &&
+                isStrongPassword(userBody.password()))
         ) {
             return false;
         }

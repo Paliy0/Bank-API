@@ -5,8 +5,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.NoArgsConstructor;
 import nl.inholland.Bank.API.model.Role;
 
+@NoArgsConstructor
 @Entity
 @Table(name = "users")
 public class User {
@@ -19,6 +21,8 @@ public class User {
     private String lastName;
     private String email;
     private String password;
+    private String phoneNumber;
+    private String bsn;
     private String birthdate;
     private String streetName;
     private int houseNumber;
@@ -29,9 +33,7 @@ public class User {
     private int transactionLimit;
     private Role role;
 
-
     //list of accounts
-
     public Long getId() {
         return this.id;
     }
@@ -68,6 +70,20 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+    public String getPhoneNumber() {
+        return this.phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+    public String getBsn() {
+        return this.bsn;
+    }
+
+    public void setBsn(String bsn) {
+        this.bsn = bsn;
     }
 
     public String getBirthdate() {
