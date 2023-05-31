@@ -51,9 +51,9 @@ public class MyApplicationRunner implements ApplicationRunner {
         user1.setLastName("Crow");
         user1.setPassword("Test123!");
         user1.setEmail("inholland1@gmail.com");
-        user.setBsn("123455789");
-        user.setPhoneNumber("+314557890");
-        user.setBirthdate("2015-07-20");
+        user1.setBsn("123455789");
+        user1.setPhoneNumber("+314557890");
+        user1.setBirthdate("2015-07-20");
         user1.setStreetName("Bijdorplaan");
         user1.setHouseNumber(15);
         user1.setZipCode("2015 CE");
@@ -64,10 +64,14 @@ public class MyApplicationRunner implements ApplicationRunner {
         user1.setRole(Role.ROLE_USER);
         userService.add(user1);
 
-        Account account = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user);
+        Account bankAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user);
         //account.setIban(accountService.generateIBAN());
-        account.setIban("NL01INHO0000000001");
-        accountService.saveAccount(account);
+        bankAccount.setIban("NL01INHO0000000001");
+        accountService.saveAccount(bankAccount);
+
+        Account testAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user1);
+        testAccount.setIban(accountService.generateIBAN());
+        accountService.saveAccount(testAccount);
 
         Transaction transaction1 = new Transaction();
         transaction1.setTimestamp(LocalDateTime.now());
