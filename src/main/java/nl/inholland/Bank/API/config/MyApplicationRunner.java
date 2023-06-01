@@ -43,12 +43,52 @@ public class MyApplicationRunner implements ApplicationRunner {
         user.setCountry("NL");
         user.setDailyLimit(100);
         user.setTransactionLimit(100);
-        user.setRole(Role.ROLE_USER);
+        user.setRole(Role.ROLE_EMPLOYEE);
         userService.add(user);
+
+        User user1 = new User();
+        user1.setFirstName("John");
+        user1.setLastName("Doe");
+        user1.setPassword("secure123");
+        user1.setEmail("johndoe@gmail.com");
+        user1.setBsn("987654321");
+        user1.setPhoneNumber("+19876543210");
+        user1.setBirthdate("1990-05-15");
+        user1.setStreetName("Main Street");
+        user1.setHouseNumber(123);
+        user1.setZipCode("12345");
+        user1.setCity("New York");
+        user1.setCountry("USA");
+        user1.setDailyLimit(200);
+        user1.setTransactionLimit(200);
+        user1.setRole(Role.ROLE_USER);
+        userService.add(user1);
+
+        User user2 = new User();
+        user2.setFirstName("Emma");
+        user2.setLastName("Smith");
+        user2.setPassword("password123");
+        user2.setEmail("emma.smith@example.com");
+        user2.setBsn("987654321");
+        user2.setPhoneNumber("+447876543210");
+        user2.setBirthdate("1985-10-25");
+        user2.setStreetName("Oak Avenue");
+        user2.setHouseNumber(45);
+        user2.setZipCode("AB12 CD3");
+        user2.setCity("London");
+        user2.setCountry("UK");
+        user2.setDailyLimit(150);
+        user2.setTransactionLimit(150);
+        user2.setRole(Role.ROLE_USER);
+        userService.add(user2);
 
         Account account = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user);
         account.setIban(accountService.generateIBAN());
         accountService.saveAccount(account);
+
+        Account account1 = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user1);
+        account1.setIban(accountService.generateIBAN());
+        accountService.saveAccount(account1);
 
         Transaction transaction1 = new Transaction();
         transaction1.setTimestamp(LocalDateTime.now());

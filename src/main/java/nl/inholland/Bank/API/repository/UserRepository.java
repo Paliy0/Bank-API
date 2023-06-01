@@ -1,8 +1,9 @@
 package nl.inholland.Bank.API.repository;
 
+import nl.inholland.Bank.API.model.Role;
 import nl.inholland.Bank.API.model.User;
-import nl.inholland.Bank.API.model.dto.UserRequestDTO;
-import nl.inholland.Bank.API.model.dto.UserResponseDTO;
+
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,4 +12,8 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends CrudRepository<User, Long> {
     User findByEmail(String email);
 
+    @Query("SELECT u FROM User u WHERE u.id NOT IN (SELECT a.accountHolder.id FROM Account a)")
+    Iterable<User> findUsersWithoutAccount();
+
+    Iterable<User> findByRole(Role roleUser);
 }
