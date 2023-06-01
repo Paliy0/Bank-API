@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import nl.inholland.Bank.API.model.AccountStatus;
 import nl.inholland.Bank.API.model.AccountType;
-import nl.inholland.Bank.API.model.User;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,5 +12,5 @@ import nl.inholland.Bank.API.model.User;
 public class AccountRequestDTO {
     private AccountStatus accountStatus;
     private AccountType accountType;
-    private User accountHolder;
+    private AccountUserResponseDTO accountHolder;
 }

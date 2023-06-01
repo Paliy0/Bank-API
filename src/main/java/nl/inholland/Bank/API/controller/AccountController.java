@@ -176,7 +176,14 @@ public class AccountController {
             accountService.saveAccount(account);
             Account createdAccount = accountService.getAccountByIban(account.getIban());
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully: " + createdAccount.toString());
+            AccountResponseDTO accountResponseDTO = modelMapper.map(createdAccount, AccountResponseDTO.class);
+            Optional<User> userOptional = userService.getUserById(createdAccount.getAccountHolder().getId());
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                AccountUserResponseDTO accountUserResponseDTO = modelMapper.map(user, AccountUserResponseDTO.class);
+                accountResponseDTO.setUser(accountUserResponseDTO);
+            }
+            return ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully: " + accountResponseDTO.toString());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }
