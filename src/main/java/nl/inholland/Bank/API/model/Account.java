@@ -93,4 +93,19 @@ public class Account {
     public void setAccountHolder(User accountHolder) {
         this.accountHolder = accountHolder;
     }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("Account{");
+        sb.append("id=").append(id);
+        sb.append(", iban='").append(iban).append('\'');
+        sb.append(", balance='").append(balance).append('\'');
+        sb.append(", absoluteLimit='").append(absoluteLimit).append('\'');
+        sb.append(", createdAt=").append(createdAt).append('\'');
+        sb.append(", accountType='").append(accountType).append('\'');
+        sb.append(", accountStatus=").append(accountStatus).append('\'');
+        sb.append(", accountHolder=").append(accountHolder);
+        sb.append('}');
+        return sb.toString();
+    }
 }
