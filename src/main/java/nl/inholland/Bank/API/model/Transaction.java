@@ -15,6 +15,7 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_seq")
     @Id
     private Long id;
+
     private LocalDateTime timestamp;
     private String fromAccountIban;
     private String toAccountIban;
@@ -74,11 +75,6 @@ public class Transaction {
     
     public void setUserId(int userId) {
         this.userId = userId;
-    }
-
-    // store the date and time at which the transaction was created
-    public Transaction() {
-        timestamp = LocalDateTime.now();
     }
 
     @Override
