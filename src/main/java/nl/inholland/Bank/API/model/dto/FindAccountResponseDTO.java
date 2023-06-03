@@ -1,8 +1,13 @@
 package nl.inholland.Bank.API.model.dto;
 
-import nl.inholland.Bank.API.model.User;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-//this should be used for /findIbanByCustomerName
-//change user to userDTO
-public record FindAccountResponseDTO(String iban, User user) {
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class FindAccountResponseDTO {
+    private String iban;
+    private String user;
 }

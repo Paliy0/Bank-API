@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import nl.inholland.Bank.API.model.*;
 import nl.inholland.Bank.API.repository.TransactionRepository;
 import nl.inholland.Bank.API.service.AccountService;
+import nl.inholland.Bank.API.service.TransactionService;
 import nl.inholland.Bank.API.service.UserService;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,8 @@ import java.time.LocalDateTime;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 
 @Component
 @Transactional
@@ -24,30 +27,56 @@ public class MyApplicationRunner implements ApplicationRunner {
         this.accountService = accountService;
         this.userService = userService;
         this.transactionRepository = transactionRepository;
+
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
         User user = new User();
-        user.setFirstName("sasa");
-        user.setLastName("crow");
+        user.setFirstName("Bank");
+        user.setLastName("INHOLLAND");
         user.setPassword("password");
         user.setEmail("sasacrow@gmail.com");
-        user.setBirthdate("14 may");
+        user.setBsn("123456789");
+        user.setPhoneNumber("+314567890");
+        user.setBirthdate("2015-07-20");
         user.setStreetName("schoonzichtlaan");
         user.setHouseNumber(8);
         user.setZipCode("2015 CL");
         user.setCity("Haarlem");
-        user.setCountry("NL");
-        user.setDailyLimit(100);
-        user.setTransactionLimit(100);
-        user.setRole(Role.ROLE_USER);
+        user.setCountry("Netherlands");
+        user.setDailyLimit(10000);
+        user.setTransactionLimit(10000);
+        user.setRole(Role.ROLE_EMPLOYEE);
         userService.add(user);
 
-        Account account = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user);
-        account.setIban(accountService.generateIBAN());
-        accountService.saveAccount(account);
+        User user1 = new User();
+        user1.setFirstName("Sasa");
+        user1.setLastName("Crow");
+        user1.setPassword("Test123!");
+        user1.setEmail("inholland1@gmail.com");
+        user1.setBsn("123455789");
+        user1.setPhoneNumber("+314557890");
+        user1.setBirthdate("2015-07-20");
+        user1.setStreetName("Bijdorplaan");
+        user1.setHouseNumber(15);
+        user1.setZipCode("2015 CE");
+        user1.setCity("Haarlem");
+        user1.setCountry("Netherlands");
+        user1.setDailyLimit(10000);
+        user1.setTransactionLimit(10000);
+        user1.setRole(Role.ROLE_USER);
+        userService.add(user1);
+
+        Account bankAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user);
+        //account.setIban(accountService.generateIBAN());
+        bankAccount.setIban("NL01INHO0000000001");
+        accountService.saveAccount(bankAccount);
+
+        Account testAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user1);
+        testAccount.setIban(accountService.generateIBAN());
+        accountService.saveAccount(testAccount);
 
         Transaction transaction1 = new Transaction();
         transaction1.setTimestamp(LocalDateTime.now());
