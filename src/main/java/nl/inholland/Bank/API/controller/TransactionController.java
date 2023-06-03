@@ -10,7 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.nio.channels.ScatteringByteChannel;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -35,11 +36,14 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> postTransaction(@RequestBody TransactionDTO newTransaction) {
+    public ResponseEntity<Object> postTransaction(@RequestBody TransactionDTO dto) {
         try {
-            Transaction transaction = modelMapper.map(newTransaction, Transaction.class);
-            transactionService.performTransaction(transaction);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Transaction successful.");
+            if (dto != null){
+                Transaction transaction = transactionService.performTransaction(dto);
+                return ResponseEntity.status(HttpStatus.CREATED).body("Transaction successful.");
+            } else{
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Transaction data is missing or null.");
+            }
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
@@ -55,37 +59,42 @@ public class TransactionController {
     }
 
     @PostMapping(value = "/atm/deposit")
-    public ResponseEntity<?> performDeposit(@RequestBody TransactionDTO newDeposit) {
+    public ResponseEntity<?> performDeposit(@RequestBody TransactionDTO dto) {
         try {
-            Transaction deposit = modelMapper.map(newDeposit, Transaction.class);
-            transactionService.performTransaction(deposit);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Deposit successful.");
+            if (dto != null){
+                Transaction deposit = transactionService.performDeposit(dto);
+                return ResponseEntity.status(HttpStatus.CREATED).body("Deposit successful.");
+            } else{
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Deposit data is missing or null.");
+            }
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }
 
     @PostMapping(value = "/atm/withdrawal")
-    public ResponseEntity<?> performWithdrawal(@RequestBody TransactionDTO newWithdrawal) {
+    public ResponseEntity<?> performWithdrawal(@RequestBody TransactionDTO dto) {
         try {
-            Transaction withdrawal = modelMapper.map(newWithdrawal, Transaction.class);
-            transactionService.performTransaction(withdrawal);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Withdrawal succesful.");
+            if (dto != null){
+                Transaction withdrawal = transactionService.performWithdrawal(dto);
+                return ResponseEntity.status(HttpStatus.CREATED).body("Withdrawal successful.");
+            } else{
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Withdrawal data is missing or null.");
+            }
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }
 
     @GetMapping(value = "/getDailyTotal/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Transaction>> getDailyTotal(@PathVariable Long userId, @RequestBody LocalDateTime date){
+    public ResponseEntity<List<Transaction>> getDailyTotal(@PathVariable Long userId){
         try{
-            List<Transaction> transactionsByDay = transactionService.getUserTransactionsByDay(userId, date);
-            if(!transactionsByDay.isEmpty()){
-                return ResponseEntity.ok().body(transactionsByDay);
+            List<Transaction> userTransactionsToday = transactionService.getUserTransactionsByDay(userId, LocalDate.now());
+            if(!userTransactionsToday.isEmpty()){
+                return ResponseEntity.ok().body(userTransactionsToday);
             } else {
                 return ResponseEntity.noContent().build();
             }
-
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
