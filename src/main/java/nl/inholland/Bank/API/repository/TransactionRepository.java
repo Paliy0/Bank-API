@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface TransactionRepository extends CrudRepository<Transaction, Long>{
-    List<Transaction> findTransactionByUserIdAndTimestamp(Long userId, LocalDateTime date);
+    List<Transaction> findTransactionByUserIdAndTimestampBetween(Long userId, LocalDateTime startDate, LocalDateTime endDate);
 }
