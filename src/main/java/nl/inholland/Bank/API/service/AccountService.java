@@ -3,6 +3,8 @@ package nl.inholland.Bank.API.service;
 import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.AccountStatus;
 import nl.inholland.Bank.API.model.AccountType;
+import nl.inholland.Bank.API.model.Role;
+import nl.inholland.Bank.API.model.User;
 import nl.inholland.Bank.API.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +50,16 @@ public class AccountService {
             newAccount.setIban(generateIBAN());
         }
 
+        User accountHolder = newAccount.getAccountHolder();
+        if(accountHolder.getRole().equals(Role.ROLE_USER)){
+            accountHolder.setRole(Role.ROLE_CUSTOMER);
+            userService.add(accountHolder);
+        }
         accountRepository.save(newAccount);
+    }
+
+    public Iterable<Account> findByAccountHolder(User user) {
+        return accountRepository.findAccountsByAccountHolder(user);
     }
 
     public void updateAccountStatus(String iban, AccountStatus accountStatus) {

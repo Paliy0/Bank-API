@@ -1,5 +1,8 @@
 package nl.inholland.Bank.API.service;
 
+import nl.inholland.Bank.API.model.Account;
+import nl.inholland.Bank.API.model.AccountStatus;
+import nl.inholland.Bank.API.model.Role;
 import nl.inholland.Bank.API.model.Transaction;
 import nl.inholland.Bank.API.model.User;
 import nl.inholland.Bank.API.model.dto.UserDLimitDTO;
@@ -7,7 +10,9 @@ import nl.inholland.Bank.API.model.dto.UserRequestDTO;
 import nl.inholland.Bank.API.model.dto.UserResponseDTO;
 import nl.inholland.Bank.API.model.dto.UserTLimitDTO;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,12 +27,14 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AccountService accountService;
     private final ModelMapper modelMapper;
     private final TransactionService transactionService;
 
 
-    public UserService(UserRepository userRepository, TransactionService transactionService) {
+    public UserService(UserRepository userRepository, TransactionService transactionService, @Lazy AccountService accountService) {
         this.userRepository = userRepository;
+        this.accountService = accountService;
         this.modelMapper = new ModelMapper();
         this.transactionService = transactionService;
     }
@@ -66,9 +73,14 @@ public class UserService {
             return false;
         }
     }
-    public List<UserResponseDTO> getAllUsers(){
-        //get users
-        Iterable<User> users = userRepository.findAll();
+    public List<UserResponseDTO> getAllUsers(boolean hasAccount){
+        Iterable<User> users;
+
+        if(!hasAccount){
+            users = userRepository.findByRole(Role.ROLE_USER);
+        } else {
+            users = userRepository.findAll();
+        }
         //only return the required response data with the UserResponseDTO
         List<UserResponseDTO> responseUsers = new ArrayList<>();
         for(User user : users){
@@ -105,10 +117,50 @@ public class UserService {
         UserDLimitDTO dailyLimit = new UserDLimitDTO(user.getId(), dailyLimitLeft);
         return dailyLimit;
     }
+
+    public UserDLimitDTO updateDailyLimit(Long id, int dailyLimit){
+        Optional<User> response = userRepository.findById(id);
+        User user = response.get();
+        user.setDailyLimit(dailyLimit);
+        User updatedUser = userRepository.save(user);
+        
+        return new UserDLimitDTO(updatedUser.getId(), updatedUser.getDailyLimit());
+    }
+
     public UserTLimitDTO getTransactionLimit(Long id){
         Optional<User> response = userRepository.findById(id);
         User user = response.get();
         UserTLimitDTO transactionLimit = new UserTLimitDTO(user.getId(), user.getTransactionLimit());
         return transactionLimit;
+    }
+
+    public UserTLimitDTO updateTransactionLimit(Long id, int transactionLimit){
+        Optional<User> response = userRepository.findById(id);
+        User user = response.get();
+        user.setTransactionLimit(transactionLimit);
+        User updatedUser = userRepository.save(user);
+        
+        return new UserTLimitDTO(updatedUser.getId(), updatedUser.getTransactionLimit());
+    }
+
+    public String deleteUserOrDeactivate(Long userId) {
+
+        Optional<User> userOpt = this.getUserById(userId);
+        if (!userOpt.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        User user = userOpt.get();
+
+        Iterable<Account> userAccounts = accountService.findByAccountHolder(user);
+
+        if (userAccounts.iterator().hasNext()) {
+            for (Account account : userAccounts) {
+                account.setAccountStatus(AccountStatus.INACTIVE);
+                accountService.saveAccount(account);
+            }
+            return "All the accounts were deactivated successfully.";
+        } 
+        userRepository.deleteById(userId);
+        return "User was deleted successfully.";
     }
 }
