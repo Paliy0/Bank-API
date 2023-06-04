@@ -3,6 +3,7 @@ package nl.inholland.Bank.API.service;
 import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.AccountStatus;
 import nl.inholland.Bank.API.model.Role;
+import nl.inholland.Bank.API.model.Transaction;
 import nl.inholland.Bank.API.model.User;
 import nl.inholland.Bank.API.model.dto.UserDLimitDTO;
 import nl.inholland.Bank.API.model.dto.UserRequestDTO;
@@ -17,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import nl.inholland.Bank.API.repository.UserRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,12 +29,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final AccountService accountService;
     private final ModelMapper modelMapper;
+    private final TransactionService transactionService;
 
 
-    public UserService(UserRepository userRepository, @Lazy AccountService accountService) {
+    public UserService(UserRepository userRepository, TransactionService transactionService, @Lazy AccountService accountService) {
         this.userRepository = userRepository;
         this.accountService = accountService;
         this.modelMapper = new ModelMapper();
+        this.transactionService = transactionService;
     }
 
     public User add(User user) {
@@ -51,7 +55,6 @@ public class UserService {
             currentUser.setFirstName(newUserData.firstName());
             currentUser.setLastName(newUserData.lastName());
             currentUser.setEmail(newUserData.email());
-            currentUser.setPassword(newUserData.password());
             currentUser.setPhoneNumber(newUserData.phoneNumber());
             currentUser.setBsn(newUserData.bsn());
             currentUser.setCity(newUserData.city());
@@ -100,7 +103,18 @@ public class UserService {
     public UserDLimitDTO getDailyLimit(Long id){
         Optional<User> response = userRepository.findById(id);
         User user = response.get();
-        UserDLimitDTO dailyLimit = new UserDLimitDTO(user.getId(), user.getDailyLimit());
+
+        LocalDate today = LocalDate.now();
+        List<Transaction>transactionsOfToday = transactionService.getUserTransactionsByDay(user.getId(), today);
+
+        int dailyTotal = 0;
+        for(Transaction transaction : transactionsOfToday){
+            dailyTotal += transaction.getAmount();
+        }
+
+        int dailyLimitLeft = user.getDailyLimit() - dailyTotal;
+
+        UserDLimitDTO dailyLimit = new UserDLimitDTO(user.getId(), dailyLimitLeft);
         return dailyLimit;
     }
 
