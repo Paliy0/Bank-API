@@ -4,11 +4,7 @@ import jakarta.transaction.Transactional;
 import nl.inholland.Bank.API.model.*;
 import nl.inholland.Bank.API.repository.TransactionRepository;
 import nl.inholland.Bank.API.service.AccountService;
-import nl.inholland.Bank.API.service.TransactionService;
 import nl.inholland.Bank.API.service.UserService;
-
-import java.time.LocalDateTime;
-
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -72,6 +68,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         Account bankAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user);
         //account.setIban(accountService.generateIBAN());
         bankAccount.setIban("NL01INHO0000000001");
+        bankAccount.setBalance(1000000);
         accountService.saveAccount(bankAccount);
 
         Account testAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user1);

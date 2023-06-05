@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
+
 @RequestMapping(value = "/accounts", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AccountController {
     private final AccountService accountService;
