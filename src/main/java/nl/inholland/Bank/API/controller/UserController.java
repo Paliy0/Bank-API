@@ -2,8 +2,11 @@ package nl.inholland.Bank.API.controller;
 
 import nl.inholland.Bank.API.model.Role;
 import nl.inholland.Bank.API.model.User;
+import nl.inholland.Bank.API.model.dto.UserDLimitDTO;
 import nl.inholland.Bank.API.model.dto.UserRequestDTO;
 import nl.inholland.Bank.API.model.dto.UserResponseDTO;
+import nl.inholland.Bank.API.model.dto.UserTLimitDTO;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -41,13 +44,14 @@ public class UserController {
     @GetMapping
     public ResponseEntity<Iterable<UserResponseDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") int skip,
-            @RequestParam(defaultValue = "50") int limit) {
+            @RequestParam(defaultValue = "50") int limit,
+            @RequestParam(defaultValue = "true") boolean hasAccount)  { //will only return users without an account if specified hasAccount=false
         try{
             if (skip < 0 || limit <= 0) {
                 return ResponseEntity.badRequest().build();
             }
 
-            Iterable<UserResponseDTO> users = userService.getAllUsers();
+            Iterable<UserResponseDTO> users = userService.getAllUsers(hasAccount);
 
             // Perform pagination logic
             List<UserResponseDTO> paginatedUsers = StreamSupport.stream(users.spliterator(), false)
@@ -146,6 +150,16 @@ public class UserController {
     }
 
     /**
+     * Delete a User
+     * HTTP Method: Delete
+     * URL: /users/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable long id){
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(userService.deleteUserOrDeactivate(id));
+    }
+
+    /**
      * Get a user's daily limit
      * HTTP Method: GET
      * URL: /users/dailyLimit/{id}
@@ -160,6 +174,20 @@ public class UserController {
     }
 
     /**
+     * Update a user's daily limit as an employee
+     * HTTP Method: PUT
+     * URL: /users/{userId}/dailyLimit
+     */
+    @PutMapping(value = "/{userId}/dailyLimit", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UserDLimitDTO> updateDailyLimitById(@PathVariable Long userId, @RequestParam int dailyLimit) {
+        try {
+            return ResponseEntity.ok().body(userService.updateDailyLimit(userId, dailyLimit));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
      * Get a user's transaction Limit
      * HTTP Method: GET
      * URL: /users/transactionLimit/{id}
@@ -168,6 +196,20 @@ public class UserController {
     public ResponseEntity<Object> getTransactionLimitById(@PathVariable long id) {
         try {
             return ResponseEntity.ok().body(userService.getTransactionLimit(id));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Update a user's transaction limit as an employee
+     * HTTP Method: PUT
+     * URL: /users/{userId}/transactionLimit
+     */
+    @PutMapping(value = "/{userId}/transactionLimit", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UserTLimitDTO> updateTransactionLimitById(@PathVariable Long userId, @RequestParam int transactionLimit) {
+        try {
+            return ResponseEntity.ok().body(userService.updateTransactionLimit(userId, transactionLimit));
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }

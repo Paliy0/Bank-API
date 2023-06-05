@@ -75,6 +75,10 @@ public class MyApplicationRunner implements ApplicationRunner {
         testAccount.setIban(accountService.generateIBAN());
         accountService.saveAccount(testAccount);
 
+        Account account1 = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user1);
+        account1.setIban(accountService.generateIBAN());
+        accountService.saveAccount(account1);
+
         Transaction transaction1 = new Transaction();
         transaction1.setTimestamp(LocalDateTime.now());
         transaction1.setFromAccountIban("NL47INGB1234567890");
