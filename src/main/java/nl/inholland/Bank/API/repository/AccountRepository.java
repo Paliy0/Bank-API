@@ -26,4 +26,6 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
     long countAccountByAccountHolder_Id(@Param("id") Long id);
 
     Iterable<Account> findAccountsByAccountHolder(User user);
+
+    Iterable<Account> findAccountsByAccountHolder_Id(Long id);
 }
