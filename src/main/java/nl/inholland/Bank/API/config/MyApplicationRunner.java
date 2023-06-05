@@ -23,29 +23,28 @@ public class MyApplicationRunner implements ApplicationRunner {
         this.accountService = accountService;
         this.userService = userService;
         this.transactionRepository = transactionRepository;
-
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
-        User user = new User();
-        user.setFirstName("Bank");
-        user.setLastName("INHOLLAND");
-        user.setPassword("password");
-        user.setEmail("sasacrow@gmail.com");
-        user.setBsn("123456789");
-        user.setPhoneNumber("+314567890");
-        user.setBirthdate("2015-07-20");
-        user.setStreetName("schoonzichtlaan");
-        user.setHouseNumber(8);
-        user.setZipCode("2015 CL");
-        user.setCity("Haarlem");
-        user.setCountry("Netherlands");
-        user.setDailyLimit(10000);
-        user.setTransactionLimit(10000);
-        user.setRole(Role.ROLE_EMPLOYEE);
-        userService.add(user);
+        User bankUser = new User();
+        bankUser.setFirstName("BANK");
+        bankUser.setLastName("INHOLLAND");
+        bankUser.setPassword("SecretPassword123!");
+        bankUser.setEmail("bank@inholland.com");
+        bankUser.setBsn("914815121");
+        bankUser.setPhoneNumber("+31 914815121");
+        bankUser.setBirthdate("2000-01-01");
+        bankUser.setStreetName("Bijdorplaan");
+        bankUser.setHouseNumber(15);
+        bankUser.setZipCode("2015 CE");
+        bankUser.setCity("Haarlem");
+        bankUser.setCountry("Netherlands");
+        bankUser.setDailyLimit(1000000);
+        bankUser.setTransactionLimit(1000000);
+        bankUser.setRole(Role.ROLE_EMPLOYEE);
+        userService.add(bankUser);
 
         User user1 = new User();
         user1.setFirstName("Sasa");
@@ -53,35 +52,36 @@ public class MyApplicationRunner implements ApplicationRunner {
         user1.setPassword("Test123!");
         user1.setEmail("inholland1@gmail.com");
         user1.setBsn("123455789");
-        user1.setPhoneNumber("+314557890");
-        user1.setBirthdate("2015-07-20");
-        user1.setStreetName("Bijdorplaan");
-        user1.setHouseNumber(15);
-        user1.setZipCode("2015 CE");
+        user1.setPhoneNumber("+31654557890");
+        user1.setBirthdate("1990-07-20");
+        user1.setStreetName("Schoonzichtlaan");
+        user1.setHouseNumber(218);
+        user1.setZipCode("2015 CL");
         user1.setCity("Haarlem");
         user1.setCountry("Netherlands");
-        user1.setDailyLimit(10000);
-        user1.setTransactionLimit(10000);
+        user1.setDailyLimit(1000);
+        user1.setTransactionLimit(100);
         user1.setRole(Role.ROLE_USER);
         userService.add(user1);
 
-        Account bankAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user);
-        //account.setIban(accountService.generateIBAN());
+        Account bankAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, bankUser);
         bankAccount.setIban("NL01INHO0000000001");
         bankAccount.setBalance(1000000);
         accountService.saveAccount(bankAccount);
 
-        Account testAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user1);
-        testAccount.setIban(accountService.generateIBAN());
-        accountService.saveAccount(testAccount);
+        Account userCurrentAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user1);
+        userCurrentAccount.setIban(accountService.generateIBAN());
+        userCurrentAccount.setBalance(250.25);
+        accountService.saveAccount(userCurrentAccount);
 
-        Account account1 = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user1);
-        account1.setIban(accountService.generateIBAN());
-        accountService.saveAccount(account1);
+        Account userSavingsAccount = new Account(AccountType.SAVINGS, AccountStatus.ACTIVE, user1);
+        userSavingsAccount.setIban(accountService.generateIBAN());
+        userSavingsAccount.setBalance(249.75);
+        accountService.saveAccount(userSavingsAccount);
 
         Transaction transaction1 = new Transaction();
         transaction1.setTimestamp(LocalDateTime.now());
-        transaction1.setFromAccountIban("NL47INGB1234567890");
+        transaction1.setFromAccountIban("NL47INGB1234567890"); //select an actual account not a string iban
         transaction1.setToAccountIban("NL56ABNA0987654321");
         transaction1.setAmount(50);
         transaction1.setDescription("test transaction");

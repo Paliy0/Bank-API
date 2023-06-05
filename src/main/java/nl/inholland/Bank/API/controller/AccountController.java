@@ -42,7 +42,7 @@ public class AccountController {
      */
     @GetMapping
     public ResponseEntity<Iterable<AccountResponseDTO>> getAllAccounts(@RequestParam(defaultValue = "10") int limit,
-                                                            @RequestParam(defaultValue = "0") int offset) {
+                                                                       @RequestParam(defaultValue = "0") int offset) {
         try {
             Iterable<Account> accounts = accountService.getAllAccounts(limit, offset);
             List<AccountResponseDTO> responseDTOS = new ArrayList<>();
@@ -63,7 +63,6 @@ public class AccountController {
             } else {
                 return ResponseEntity.notFound().build();
             }
-//            return ResponseEntity.ok().body(accountService.getAllAccounts(limit, offset));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
@@ -99,6 +98,42 @@ public class AccountController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving account: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get accounts for logged-in user
+     * HTTP Method: GET
+     * URL: /accounts/myAccounts/{userId}
+     */
+    @GetMapping(value = "/myAccounts/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Iterable<MyAccountResponseDTO>> getMyAccounts(@PathVariable Long userId) {
+        try {
+            Iterable<Account> accounts = accountService.findAccountsByLoggedInUser(userId);
+            List<MyAccountResponseDTO> responseDTOS = new ArrayList<>();
+
+            for (Account account : accounts) {
+                MyAccountResponseDTO responseDTO = modelMapper.map(account, MyAccountResponseDTO.class);
+                responseDTOS.add(responseDTO);
+            }
+
+            // Calculate combined balance for each user
+            for (MyAccountResponseDTO responseDTO : responseDTOS) {
+                double combinedBalance = 0.0;
+
+                for (Account account : accounts) {
+                    combinedBalance += account.getBalance();
+                }
+                responseDTO.setTotalBalance(combinedBalance);
+            }
+
+            if (!responseDTOS.isEmpty()) {
+                return ResponseEntity.ok().body(responseDTOS);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 
@@ -203,7 +238,25 @@ public class AccountController {
             accountService.updateAccountStatus(iban, newAccountStatus);
             Account createdAccount = accountService.getAccountByIban(iban);
 
-            return ResponseEntity.status(HttpStatus.OK).body("Updated successfully: " + createdAccount.toString());
+            return ResponseEntity.status(HttpStatus.OK).body("Account status updated successfully: " + createdAccount.toString());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
+        }
+    }
+
+    /**
+     * Update absoluteLimit of account
+     * HTTP Method: PUT
+     * URL: /accounts/absoluteLimit/{iban}
+     */
+    @PutMapping(value = "/absoluteLimit/{iban}")
+    public ResponseEntity<String> updateAccountAbsoluteLimit(@PathVariable String iban, @RequestBody AbsoluteLimitAccountRequestDTO accountAbsoluteLimitRequest) {
+        try {
+            double absoluteLimit = accountAbsoluteLimitRequest.absoluteLimit();
+            accountService.updateAccountAbsoluteLimit(iban, absoluteLimit);
+            Account createdAccount = accountService.getAccountByIban(iban);
+
+            return ResponseEntity.status(HttpStatus.OK).body("Absolute limit updated successfully: " + createdAccount.toString());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }

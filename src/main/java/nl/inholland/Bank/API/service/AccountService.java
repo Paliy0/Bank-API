@@ -51,7 +51,7 @@ public class AccountService {
         }
 
         User accountHolder = newAccount.getAccountHolder();
-        if(accountHolder.getRole().equals(Role.ROLE_USER)){
+        if (accountHolder.getRole().equals(Role.ROLE_USER)) {
             accountHolder.setRole(Role.ROLE_CUSTOMER);
             userService.add(accountHolder);
         }
@@ -62,9 +62,19 @@ public class AccountService {
         return accountRepository.findAccountsByAccountHolder(user);
     }
 
+    public Iterable<Account> findAccountsByLoggedInUser(Long id) {
+        return accountRepository.findAccountsByAccountHolder_Id(id);
+    }
+
     public void updateAccountStatus(String iban, AccountStatus accountStatus) {
         Account updateAccount = accountRepository.findAccountByIban(iban);
         updateAccount.setAccountStatus(accountStatus);
+        accountRepository.save(updateAccount);
+    }
+
+    public void updateAccountAbsoluteLimit(String iban, double absoluteLimit) {
+        Account updateAccount = accountRepository.findAccountByIban(iban);
+        updateAccount.setAbsoluteLimit(absoluteLimit);
         accountRepository.save(updateAccount);
     }
 
