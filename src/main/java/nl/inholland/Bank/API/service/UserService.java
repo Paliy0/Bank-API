@@ -13,15 +13,19 @@ import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import nl.inholland.Bank.API.repository.UserRepository;
+import nl.inholland.Bank.API.util.JwtTokenProvider;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import javax.naming.AuthenticationException;
 
 @Service
 public class UserService {
@@ -30,22 +34,27 @@ public class UserService {
     private final AccountService accountService;
     private final ModelMapper modelMapper;
     private final TransactionService transactionService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
 
-    public UserService(UserRepository userRepository, TransactionService transactionService, @Lazy AccountService accountService) {
+    public UserService(UserRepository userRepository, TransactionService transactionService, @Lazy AccountService accountService, BCryptPasswordEncoder bCryptPasswordEncoder, JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
         this.accountService = accountService;
         this.modelMapper = new ModelMapper();
         this.transactionService = transactionService;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     public User add(User user) {
         if (user != null) {
-            userRepository.save(user);
+            user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        
         } else {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "error, user was null");
         }
-        return user;
+        return userRepository.save(user);
     }
     public boolean update(UserRequestDTO newUserData, Long id){
         Optional<User> response = userRepository.findById(id);
@@ -74,13 +83,13 @@ public class UserService {
         }
     }
     public List<UserResponseDTO> getAllUsers(boolean hasAccount){
-        Iterable<User> users;
+        Iterable<User> users = userRepository.findAll();
 
-        if(!hasAccount){
-            users = userRepository.findByRole(Role.ROLE_USER);
+        /* if(!hasAccount){
+            users = userRepository.findUsersByRole(Role.ROLE_USER);
         } else {
             users = userRepository.findAll();
-        }
+        } */
         //only return the required response data with the UserResponseDTO
         List<UserResponseDTO> responseUsers = new ArrayList<>();
         for(User user : users){
@@ -96,7 +105,7 @@ public class UserService {
     // Get by Email
     //return User instead of response because password needed for login???
     public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email).get();
     }
 
     //still needs to be calculated with the transactions
@@ -162,5 +171,22 @@ public class UserService {
         } 
         userRepository.deleteById(userId);
         return "User was deleted successfully.";
+    }
+
+    public String login(String email, String password) throws Exception {
+        // See if a user with the provided username exists or throw exception
+        Optional<User> optionalUser = this.userRepository.findByEmail(email);
+        if (!optionalUser.isPresent()) {
+            throw new AuthenticationException("User not found");
+        }
+        User user = optionalUser.get();
+
+        // Check if the password hash matches
+        if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
+            // Return a JWT to the client
+            return jwtTokenProvider.createToken(user.getEmail(), user.getRole());
+        } else {
+            throw new AuthenticationException("Invalid username/password");
+        }
     }
 }
