@@ -109,6 +109,7 @@ public class AccountController {
      * HTTP Method: GET
      * URL: /accounts/myAccounts/{userId}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE') || hasRole('ROLE_CUSTOMER')")
     @GetMapping(value = "/myAccounts/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<MyAccountResponseDTO>> getMyAccounts(@PathVariable Long userId) {
         try {
@@ -145,6 +146,7 @@ public class AccountController {
      * HTTP Method: GET
      * URL: /accounts/getIbanByCustomerName?firstName={accountHolderFirstName}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE') || hasRole('ROLE_CUSTOMER')")
     @GetMapping(value = "/getIbanByCustomerName", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<FindAccountResponseDTO>> getIbanByCustomerName(@RequestParam String firstName) {
         try {
