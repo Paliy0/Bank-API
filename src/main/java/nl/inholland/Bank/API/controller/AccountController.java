@@ -41,6 +41,7 @@ public class AccountController {
      * - limit - items per page (10 by default)
      * - offset - starting point (0 by default)
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @GetMapping
     public ResponseEntity<Iterable<AccountResponseDTO>> getAllAccounts(@RequestParam(defaultValue = "10") int limit,
                                                                        @RequestParam(defaultValue = "0") int offset) {
@@ -74,6 +75,7 @@ public class AccountController {
      * HTTP Method: GET
      * URL: /accounts/{iban}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @GetMapping(value = "/{iban}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
         try {
@@ -169,6 +171,7 @@ public class AccountController {
      * HTTP Method: POST
      * URL: /accounts
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PostMapping
     public ResponseEntity<String> insertAccount(@RequestBody AccountRequestDTO accountRequest) {
         try {
