@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-@Transactional
 public class MyApplicationRunner implements ApplicationRunner {
 
     private final AccountService accountService;
@@ -26,6 +25,7 @@ public class MyApplicationRunner implements ApplicationRunner {
     }
 
     @Override
+    @Transactional
     public void run(ApplicationArguments args) throws Exception {
 
         User bankUser = new User();
@@ -63,6 +63,9 @@ public class MyApplicationRunner implements ApplicationRunner {
         user1.setTransactionLimit(100);
         user1.setRole(Role.ROLE_USER);
         userService.add(user1);
+
+        boolean hasAccount = false;
+        userService.getAllUsers(hasAccount).forEach(System.out::println);
 
         Account bankAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, bankUser);
         bankAccount.setIban("NL01INHO0000000001");

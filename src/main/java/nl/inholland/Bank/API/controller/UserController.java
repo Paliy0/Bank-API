@@ -7,10 +7,10 @@ import nl.inholland.Bank.API.model.dto.UserRequestDTO;
 import nl.inholland.Bank.API.model.dto.UserResponseDTO;
 import nl.inholland.Bank.API.model.dto.UserTLimitDTO;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -29,11 +29,9 @@ import java.util.stream.StreamSupport;
 public class UserController {
 
     private final UserService userService;
-    private final ModelMapper modelMapper;
 
     public UserController(UserService userService) {
         this.userService = userService;
-        this.modelMapper = new ModelMapper();
     }
 
     /**
@@ -41,6 +39,7 @@ public class UserController {
      * HTTP Method: Get
      * URL: /users
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @GetMapping
     public ResponseEntity<Iterable<UserResponseDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") int skip,
@@ -70,6 +69,7 @@ public class UserController {
      * HTTP Method: POST
      * URL: /users
      */
+
     @PostMapping
     public ResponseEntity<Object> registerUser(@RequestBody UserRequestDTO userRequest) {
         try {
@@ -114,6 +114,7 @@ public class UserController {
      * HTTP Method: PUT
      * URL: users/updateInformation/{id}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PutMapping(value = "/updateInformation/{id}")
     public ResponseEntity<Object> changeUserData(@PathVariable long id, @RequestBody UserRequestDTO newUserData){
         try{
@@ -140,6 +141,7 @@ public class UserController {
      * HTTP Method: Get
      * URL: /users/{id}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getLoggedInUser(@PathVariable long id) {
         try {
@@ -154,6 +156,7 @@ public class UserController {
      * HTTP Method: Delete
      * URL: /users/{id}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable long id){
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(userService.deleteUserOrDeactivate(id));
@@ -164,6 +167,7 @@ public class UserController {
      * HTTP Method: GET
      * URL: /users/dailyLimit/{id}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE') || hasRole('ROLE_CUSTOMER')")
     @GetMapping(value = "dailyLimit/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getDailyLimitById(@PathVariable long id) {
         try {
@@ -178,6 +182,7 @@ public class UserController {
      * HTTP Method: PUT
      * URL: /users/{userId}/dailyLimit
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PutMapping(value = "/{userId}/dailyLimit", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDLimitDTO> updateDailyLimitById(@PathVariable Long userId, @RequestParam int dailyLimit) {
         try {
@@ -192,6 +197,7 @@ public class UserController {
      * HTTP Method: GET
      * URL: /users/transactionLimit/{id}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE') || hasRole('ROLE_CUSTOMER')")
     @GetMapping(value = "transactionLimit/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getTransactionLimitById(@PathVariable long id) {
         try {
