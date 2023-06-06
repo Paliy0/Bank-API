@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -231,6 +232,7 @@ public class AccountController {
      * HTTP Method: PUT
      * URL: /accounts/accountStatus/{iban}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PutMapping(value = "/accountStatus/{iban}")
     public ResponseEntity<String> updateAccountStatus(@PathVariable String iban, @RequestBody StatusAccountRequestDTO accountStatusRequest) {
         try {
@@ -249,6 +251,7 @@ public class AccountController {
      * HTTP Method: PUT
      * URL: /accounts/absoluteLimit/{iban}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PutMapping(value = "/absoluteLimit/{iban}")
     public ResponseEntity<String> updateAccountAbsoluteLimit(@PathVariable String iban, @RequestBody AbsoluteLimitAccountRequestDTO accountAbsoluteLimitRequest) {
         try {

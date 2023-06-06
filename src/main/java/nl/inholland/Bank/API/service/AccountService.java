@@ -42,11 +42,11 @@ public class AccountService {
     }
 
     public void saveAccount(Account newAccount) {
-        User accountHolder = newAccount.getAccountHolder();
-        if (accountHolder.getRole().equals(Role.ROLE_USER)) {
-            accountHolder.setRole(Role.ROLE_CUSTOMER);
-            userService.updateUserRole(accountHolder);
-        }
+//        User accountHolder = newAccount.getAccountHolder();
+//        if (accountHolder.getRole().equals(Role.ROLE_USER)) {
+//            accountHolder.setRole(Role.ROLE_CUSTOMER);
+//            userService.add(accountHolder);
+//        }
 
         if (newAccount.getIban() == null) {
             newAccount.setIban(generateIBAN());
