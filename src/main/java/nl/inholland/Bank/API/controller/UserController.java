@@ -39,7 +39,6 @@ public class UserController {
      * HTTP Method: Get
      * URL: /users
      */
-    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @GetMapping
     public ResponseEntity<Iterable<UserResponseDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") int skip,
@@ -141,7 +140,6 @@ public class UserController {
      * HTTP Method: Get
      * URL: /users/{id}
      */
-    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getLoggedInUser(@PathVariable long id) {
         try {

@@ -1,14 +1,11 @@
 package nl.inholland.Bank.API.service;
 
-import nl.inholland.Bank.API.model.Account;
-import nl.inholland.Bank.API.model.AccountStatus;
-import nl.inholland.Bank.API.model.Role;
-import nl.inholland.Bank.API.model.Transaction;
-import nl.inholland.Bank.API.model.User;
+import nl.inholland.Bank.API.model.*;
 import nl.inholland.Bank.API.model.dto.UserDLimitDTO;
 import nl.inholland.Bank.API.model.dto.UserRequestDTO;
 import nl.inholland.Bank.API.model.dto.UserResponseDTO;
 import nl.inholland.Bank.API.model.dto.UserTLimitDTO;
+import nl.inholland.Bank.API.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -60,7 +57,7 @@ public class UserService {
         Optional<User> response = userRepository.findById(id);
         User currentUser = response.get();
 
-        if(currentUser != null){
+        if (currentUser != null) {
             currentUser.setFirstName(newUserData.firstName());
             currentUser.setLastName(newUserData.lastName());
             currentUser.setEmail(newUserData.email());
@@ -76,9 +73,9 @@ public class UserService {
 
         User updated = userRepository.save(currentUser);
 
-        if(updated != null) {
+        if (updated != null) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
@@ -92,16 +89,17 @@ public class UserService {
         } */
         //only return the required response data with the UserResponseDTO
         List<UserResponseDTO> responseUsers = new ArrayList<>();
-        for(User user : users){
+        for (User user : users) {
             UserResponseDTO userResponse = new UserResponseDTO(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(), user.getBsn(), user.getBirthdate(), user.getStreetName(), user.getHouseNumber(), user.getZipCode(), user.getCity(), user.getCountry(), user.getDailyLimit(), user.getTransactionLimit(), user.getRole());
             responseUsers.add(userResponse);
         }
         return responseUsers;
     }
 
-    public Optional<User> getUserById(Long id){
+    public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
+
     // Get by Email
     //return User instead of response because password needed for login???
     public User getUserByEmail(String email) {
@@ -109,15 +107,15 @@ public class UserService {
     }
 
     //still needs to be calculated with the transactions
-    public UserDLimitDTO getDailyLimit(Long id){
+    public UserDLimitDTO getDailyLimit(Long id) {
         Optional<User> response = userRepository.findById(id);
         User user = response.get();
 
         LocalDate today = LocalDate.now();
-        List<Transaction>transactionsOfToday = transactionService.getUserTransactionsByDay(user.getId(), today);
+        List<Transaction> transactionsOfToday = transactionService.getUserTransactionsByDay(user.getId(), today);
 
         int dailyTotal = 0;
-        for(Transaction transaction : transactionsOfToday){
+        for (Transaction transaction : transactionsOfToday) {
             dailyTotal += transaction.getAmount();
         }
 
@@ -127,28 +125,28 @@ public class UserService {
         return dailyLimit;
     }
 
-    public UserDLimitDTO updateDailyLimit(Long id, int dailyLimit){
+    public UserDLimitDTO updateDailyLimit(Long id, int dailyLimit) {
         Optional<User> response = userRepository.findById(id);
         User user = response.get();
         user.setDailyLimit(dailyLimit);
         User updatedUser = userRepository.save(user);
-        
+
         return new UserDLimitDTO(updatedUser.getId(), updatedUser.getDailyLimit());
     }
 
-    public UserTLimitDTO getTransactionLimit(Long id){
+    public UserTLimitDTO getTransactionLimit(Long id) {
         Optional<User> response = userRepository.findById(id);
         User user = response.get();
         UserTLimitDTO transactionLimit = new UserTLimitDTO(user.getId(), user.getTransactionLimit());
         return transactionLimit;
     }
 
-    public UserTLimitDTO updateTransactionLimit(Long id, int transactionLimit){
+    public UserTLimitDTO updateTransactionLimit(Long id, int transactionLimit) {
         Optional<User> response = userRepository.findById(id);
         User user = response.get();
         user.setTransactionLimit(transactionLimit);
         User updatedUser = userRepository.save(user);
-        
+
         return new UserTLimitDTO(updatedUser.getId(), updatedUser.getTransactionLimit());
     }
 
@@ -168,7 +166,7 @@ public class UserService {
                 accountService.saveAccount(account);
             }
             return "All the accounts were deactivated successfully.";
-        } 
+        }
         userRepository.deleteById(userId);
         return "User was deleted successfully.";
     }

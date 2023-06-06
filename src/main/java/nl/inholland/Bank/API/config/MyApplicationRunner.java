@@ -61,7 +61,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         user1.setCountry("Netherlands");
         user1.setDailyLimit(1000);
         user1.setTransactionLimit(100);
-        user1.setRole(Role.ROLE_USER);
+        user1.setRole(Role.ROLE_CUSTOMER);
         userService.add(user1);
 
         boolean hasAccount = false;
