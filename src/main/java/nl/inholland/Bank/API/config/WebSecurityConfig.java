@@ -29,10 +29,8 @@ public class WebSecurityConfig {
     // Read more here: https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.
-                csrf((csrf ->
-                        csrf
-                                .ignoringRequestMatchers("/*")));
+        httpSecurity.csrf().disable();
+
         httpSecurity.sessionManagement(
                 sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -40,7 +38,7 @@ public class WebSecurityConfig {
         httpSecurity.
                 authorizeHttpRequests((
                         authz -> authz
-                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/login").permitAll() 
                         .anyRequest().authenticated()));
 
         // We ensure our own filter is executed before the framework runs its own authentication filter code

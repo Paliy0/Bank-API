@@ -61,11 +61,11 @@ public class MyApplicationRunner implements ApplicationRunner {
         user1.setCountry("Netherlands");
         user1.setDailyLimit(1000);
         user1.setTransactionLimit(100);
-        user1.setRole(Role.ROLE_USER);
+        user1.setRole(Role.ROLE_CUSTOMER);
         userService.add(user1);
 
-        boolean hasAccount = false;
-        userService.getAllUsers(hasAccount).forEach(System.out::println);
+/*         boolean hasAccount = false;
+        userService.getAllUsers(hasAccount).forEach(System.out::println); */
 
         Account bankAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, bankUser);
         bankAccount.setIban("NL01INHO0000000001");
