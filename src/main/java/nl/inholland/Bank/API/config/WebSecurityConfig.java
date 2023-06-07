@@ -30,6 +30,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf().disable();
+        httpSecurity.cors();
 
         httpSecurity.sessionManagement(
                 sess -> sess
