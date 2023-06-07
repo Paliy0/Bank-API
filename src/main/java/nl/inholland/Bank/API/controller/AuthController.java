@@ -1,5 +1,6 @@
 package nl.inholland.Bank.API.controller;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +11,7 @@ import nl.inholland.Bank.API.model.dto.TokenDTO;
 import nl.inholland.Bank.API.service.UserService;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/login")
 public class AuthController {
 
