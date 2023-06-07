@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import nl.inholland.Bank.API.model.dto.LoginDTO;
-import nl.inholland.Bank.API.model.dto.TokenDTO;
 import nl.inholland.Bank.API.service.UserService;
 
 @RestController
