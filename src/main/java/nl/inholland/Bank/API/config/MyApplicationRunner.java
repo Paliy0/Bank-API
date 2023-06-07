@@ -64,6 +64,24 @@ public class MyApplicationRunner implements ApplicationRunner {
         user1.setRole(Role.ROLE_CUSTOMER);
         userService.add(user1);
 
+        User user2 = new User();
+        user2.setFirstName("Jo");
+        user2.setLastName("Becker");
+        user2.setPassword("Secret123!");
+        user2.setEmail("inholland@student.nl");
+        user2.setBsn("015754702");
+        user2.setPhoneNumber("+49015754702");
+        user2.setBirthdate("1990-07-20");
+        user2.setStreetName("Schoonzichtlaan");
+        user2.setHouseNumber(218);
+        user2.setZipCode("2015 CL");
+        user2.setCity("Haarlem");
+        user2.setCountry("Netherlands");
+        user2.setDailyLimit(200);
+        user2.setTransactionLimit(100);
+        user2.setRole(Role.ROLE_CUSTOMER);
+        userService.add(user2);
+
         boolean hasAccount = false;
         userService.getAllUsers(hasAccount).forEach(System.out::println);
 

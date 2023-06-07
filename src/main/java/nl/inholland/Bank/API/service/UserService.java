@@ -79,15 +79,17 @@ public class UserService {
             return false;
         }
     }
-    public List<UserResponseDTO> getAllUsers(boolean hasAccount){
-        Iterable<User> users = userRepository.findAll();
+    public List<UserResponseDTO> getAllUsers(boolean hasAccount) {
+        Iterable<User> response = userRepository.findAll();
 
-        /* if(!hasAccount){
-            users = userRepository.findUsersByRole(Role.ROLE_USER);
-        } else {
-            users = userRepository.findAll();
-        } */
-        //only return the required response data with the UserResponseDTO
+        if (!hasAccount) {
+            response = userRepository.findUsersWithoutAccount();
+        }
+
+        List<User> users = new ArrayList<>();
+        response.forEach(users::add);
+
+        // only return the required response data with the UserResponseDTO
         List<UserResponseDTO> responseUsers = new ArrayList<>();
         for (User user : users) {
             UserResponseDTO userResponse = new UserResponseDTO(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(), user.getBsn(), user.getBirthdate(), user.getStreetName(), user.getHouseNumber(), user.getZipCode(), user.getCity(), user.getCountry(), user.getDailyLimit(), user.getTransactionLimit(), user.getRole());
@@ -95,7 +97,6 @@ public class UserService {
         }
         return responseUsers;
     }
-
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
