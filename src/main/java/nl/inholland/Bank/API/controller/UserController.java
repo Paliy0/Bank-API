@@ -23,7 +23,7 @@ import java.util.stream.StreamSupport;
 
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+//@CrossOrigin(origins = "*")
 @RequestMapping(value = "/users" , produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
@@ -102,7 +102,8 @@ public class UserController {
             userService.add(newUser);
 
             return  ResponseEntity.status(HttpStatus.CREATED).body("User created successfully");
-        }catch(Exception e){
+        }
+        catch(Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }
     }

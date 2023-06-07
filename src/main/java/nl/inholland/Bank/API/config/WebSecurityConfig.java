@@ -10,6 +10,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import nl.inholland.Bank.API.filter.JwtTokenFilter;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -28,7 +30,9 @@ public class WebSecurityConfig {
     // Read more here: https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.csrf().disable();
+    
+        httpSecurity.csrf((csrf -> csrf.ignoringRequestMatchers("/*").disable()));
+
 
         httpSecurity.sessionManagement(
                 sess -> sess
@@ -45,4 +49,14 @@ public class WebSecurityConfig {
 
         return httpSecurity.build();
     }
+
+    /* @Bean
+	CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+		configuration.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE"));
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
+	} */
 }

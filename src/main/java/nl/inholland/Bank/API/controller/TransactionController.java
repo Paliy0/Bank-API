@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+//@CrossOrigin(origins = "*")
 @RequestMapping(value = "/transactions", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TransactionController {
     private final TransactionService transactionService;
