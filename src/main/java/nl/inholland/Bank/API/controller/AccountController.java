@@ -109,6 +109,7 @@ public class AccountController {
      * HTTP Method: GET
      * URL: /accounts/myAccounts/{userId}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE') || hasRole('ROLE_CUSTOMER')")
     @GetMapping(value = "/myAccounts/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<MyAccountResponseDTO>> getMyAccounts(@PathVariable Long userId) {
         try {
@@ -145,6 +146,7 @@ public class AccountController {
      * HTTP Method: GET
      * URL: /accounts/getIbanByCustomerName?firstName={accountHolderFirstName}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE') || hasRole('ROLE_CUSTOMER')")
     @GetMapping(value = "/getIbanByCustomerName", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<FindAccountResponseDTO>> getIbanByCustomerName(@RequestParam String firstName) {
         try {
@@ -243,7 +245,14 @@ public class AccountController {
             accountService.updateAccountStatus(iban, newAccountStatus);
             Account createdAccount = accountService.getAccountByIban(iban);
 
-            return ResponseEntity.status(HttpStatus.OK).body("Account status updated successfully: " + createdAccount.toString());
+            AccountResponseDTO accountResponseDTO = modelMapper.map(createdAccount, AccountResponseDTO.class);
+            Optional<User> userOptional = userService.getUserById(createdAccount.getAccountHolder().getId());
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                AccountUserResponseDTO accountUserResponseDTO = modelMapper.map(user, AccountUserResponseDTO.class);
+                accountResponseDTO.setUser(accountUserResponseDTO);
+            }
+            return ResponseEntity.status(HttpStatus.OK).body("Account status updated successfully: " + accountResponseDTO.toString());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }
@@ -262,7 +271,15 @@ public class AccountController {
             accountService.updateAccountAbsoluteLimit(iban, absoluteLimit);
             Account createdAccount = accountService.getAccountByIban(iban);
 
-            return ResponseEntity.status(HttpStatus.OK).body("Absolute limit updated successfully: " + createdAccount.toString());
+            AccountResponseDTO accountResponseDTO = modelMapper.map(createdAccount, AccountResponseDTO.class);
+            Optional<User> userOptional = userService.getUserById(createdAccount.getAccountHolder().getId());
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                AccountUserResponseDTO accountUserResponseDTO = modelMapper.map(user, AccountUserResponseDTO.class);
+                accountResponseDTO.setUser(accountUserResponseDTO);
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body("Absolute limit updated successfully: " + accountResponseDTO.toString());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }
