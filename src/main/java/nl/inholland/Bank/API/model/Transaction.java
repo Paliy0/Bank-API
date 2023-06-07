@@ -1,12 +1,8 @@
 package nl.inholland.Bank.API.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Entity
 @Table(name="transactions")
@@ -15,13 +11,15 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_seq")
     @Id
     private Long id;
-
     private LocalDateTime timestamp;
-    private String fromAccountIban;
-    private String toAccountIban;
-    private int amount;
+    @ManyToOne
+    private Account fromAccount;
+    @ManyToOne
+    private Account toAccount;
+    private Double amount;
     private String description;
-    private int userId;
+    @ManyToOne
+    private User user;
 
     public Long getId() {
         return id;
@@ -37,30 +35,30 @@ public class Transaction {
         this.timestamp = timestamp;
     }
     
-    public String getFromAccountIban() {
-        return fromAccountIban;
+    public Account getFromAccount() {
+        return fromAccount;
     }
 
-    public void setFromAccountIban(String fromAccountIban) {
-        this.fromAccountIban = fromAccountIban;
+    public void setFromAccount(Account fromAccount) {
+        this.fromAccount = fromAccount;
     }
     
-    public String getToAccountIban() {
-        return toAccountIban;
+    public Account getToAccount() {
+        return toAccount;
     }
 
-    public void setToAccountIban(String toAccountIban) {
-        this.toAccountIban = toAccountIban;
+    public void setToAccount(Account toAccount) {
+        this.toAccount = toAccount;
     }
     
-    public int getAmount() {
+    public Double getAmount() {
         return amount;
     }
 
-    public void setAmount(int amount) {
+    public void setAmount(Double amount) {
         this.amount = amount;
     }
-    
+
     public String getDescription() {
         return description;
     }
@@ -68,25 +66,19 @@ public class Transaction {
     public void setDescription(String description) {
         this.description = description;
     }
-    
-    public int getUserId() {
-        return userId;
-    }
-    
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
+
+    public User getUser() { return fromAccount.getAccountHolder(); }
 
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("Transaction{");
         sb.append("id=").append(id);
         sb.append(", timestamp=").append(timestamp).append('\'');
-        sb.append(", from=").append(fromAccountIban).append('\'');
-        sb.append(", to=").append(toAccountIban).append('\'');
+        sb.append(", from=").append(fromAccount).append('\'');
+        sb.append(", to=").append(toAccount).append('\'');
         sb.append(", amount=").append(amount).append('\'');
         sb.append(", description=").append(description).append('\'');
-        sb.append(", userId=").append(userId).append('\'');
+        sb.append(", user=").append(user).append('\'');
         sb.append('}');
         return sb.toString();
     }

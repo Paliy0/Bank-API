@@ -11,7 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/transactions", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -26,9 +28,17 @@ public class TransactionController {
     }
 
     @GetMapping
-    public ResponseEntity<Iterable<Transaction>> getAllTransactions() {
+    public ResponseEntity<Iterable<Transaction>> getAllTransactions(@PathVariable Long userId,
+                                                                    @RequestParam Optional<Integer> page,
+                                                                    @RequestParam Optional<Integer> limit,
+                                                                    @RequestParam Optional<LocalDate> startDate,
+                                                                    @RequestParam Optional<LocalDate> endDate,
+                                                                    @RequestParam Optional<String> fromIban,
+                                                                    @RequestParam Optional<String> toIban,
+                                                                    @RequestParam Optional<Double> minAmount,
+                                                                    @RequestParam Optional<Double> maxAmount) {
         try {
-            return ResponseEntity.ok().body(transactionService.getAllTransactions());
+            return ResponseEntity.ok().body(transactionService.getAllTransactions(userId, page, limit, startDate, endDate, fromIban, toIban, minAmount, maxAmount));
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
@@ -38,7 +48,7 @@ public class TransactionController {
     public ResponseEntity<Object> postTransaction(@RequestBody TransactionDTO dto) {
         try {
             if (dto != null){
-                Transaction transaction = transactionService.performTransaction(dto);
+                transactionService.performTransaction(dto);
                 return ResponseEntity.status(HttpStatus.CREATED).body("Transaction successful.");
             } else{
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Transaction data is missing or null.");
@@ -61,7 +71,7 @@ public class TransactionController {
     public ResponseEntity<?> performDeposit(@RequestBody TransactionDTO dto) {
         try {
             if (dto != null){
-                Transaction deposit = transactionService.performDeposit(dto);
+                transactionService.performDeposit(dto);
                 return ResponseEntity.status(HttpStatus.CREATED).body("Deposit successful.");
             } else{
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Deposit data is missing or null.");
@@ -75,7 +85,7 @@ public class TransactionController {
     public ResponseEntity<?> performWithdrawal(@RequestBody TransactionDTO dto) {
         try {
             if (dto != null){
-                Transaction withdrawal = transactionService.performWithdrawal(dto);
+                transactionService.performWithdrawal(dto);
                 return ResponseEntity.status(HttpStatus.CREATED).body("Withdrawal successful.");
             } else{
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Withdrawal data is missing or null.");

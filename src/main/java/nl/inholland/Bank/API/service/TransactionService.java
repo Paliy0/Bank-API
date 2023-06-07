@@ -2,16 +2,21 @@ package nl.inholland.Bank.API.service;
 
 import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.AccountType;
+import nl.inholland.Bank.API.model.User;
 import nl.inholland.Bank.API.model.dto.TransactionDTO;
 import nl.inholland.Bank.API.repository.AccountRepository;
 import nl.inholland.Bank.API.repository.TransactionRepository;
 import nl.inholland.Bank.API.model.Transaction;
 
+import java.awt.print.Pageable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,16 +24,49 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
-    private final UserService userService;
     private final String bankIban = "NL01INHO0000000001";
 
-    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository, UserService userService) {
+    public TransactionService(TransactionRepository transactionRepository, AccountRepository accountRepository) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
-        this.userService = userService;
     }
 
-    public Iterable<Transaction> getAllTransactions() {
+    public Iterable<Transaction> getAllTransactions(Long userId, Optional<Integer> page, Optional<Integer> limit, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Optional<String> fromIban, Optional<String> toIban, Optional<Double> minAmount, Optional<Double> maxAmount){
+
+        // Pagination
+        int pageNumber = page.orElse(0);
+        int pageLimit = limit.orElse(10);
+        Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageLimit);
+
+        // Filters
+        LocalDateTime startTime = startDate.orElse(LocalDate.now()).atStartOfDay();
+        LocalDateTime endTime = endDate.orElse(LocalDate.now()).atTime(23, 59, 59);
+
+
+        if (startDate.isPresent() && endDate.isPresent()){
+            transactionRepository.findTransactionsByUserIdAndTimestampBetween(userId, startTime, endTime);
+        }
+
+        if (fromIban.isPresent()){
+            transactionRepository.findTransactionsByUserIdAndTimestampBetweenAndFromAccount(userId, startTime, endTime, accountRepository.findAccountByIban(fromIban.get()));
+        }
+
+        if (toIban.isPresent()){
+            transactionRepository.findTransactionsByUserIdAndTimestampBetweenAndToAccount(userId, startTime, endTime, accountRepository.findAccountByIban(toIban.get()));
+        }
+
+        if (minAmount != null ){
+            transactionRepository.findTransactionsByUserIdAndAmountGreaterThan(userId, minAmount.get());
+        }
+
+        if (maxAmount != null){
+            transactionRepository.findTransactionsByUserIdAndAmountLessThan(userId, maxAmount.get());
+        }
+
+        if (maxAmount == minAmount){
+            transactionRepository.findTransactionsByUserIdAndAmountEquals(userId, maxAmount.get());
+        }
+
         return transactionRepository.findAll();
     }
 
@@ -38,51 +76,52 @@ public class TransactionService {
 
     public Transaction performTransaction(TransactionDTO dto) {
         Transaction transaction = this.mapDtoToTransaction(dto);
-        transaction.setFromAccountIban(dto.fromAccountIban());
-        transaction.setToAccountIban(dto.toAccountIban());
+        transaction.setFromAccount(dto.fromAccount());
+        transaction.setToAccount(dto.toAccount());
 
-        Account fromAccount = accountRepository.findAccountByIban(transaction.getFromAccountIban());
-        Account toAccount = accountRepository.findAccountByIban(transaction.getToAccountIban());
-        int dailyLimit = Integer.parseInt(userService.getDailyLimit(fromAccount.getId()).toString());
-        int transactionLimit = Integer.parseInt(userService.getTransactionLimit(fromAccount.getId()).toString());
+        int dailyLimit = transaction.getFromAccount().getAccountHolder().getDailyLimit();
+        int transactionLimit = transaction.getFromAccount().getAccountHolder().getTransactionLimit();
 
-        // check if the transaction is from or to a savings account and if the user is the same
-        if ((fromAccount.getAccountType() == AccountType.SAVINGS || toAccount.getAccountType() == AccountType.SAVINGS) && fromAccount.getAccountHolder().getId() != toAccount.getAccountHolder().getId()){
-            throw new IllegalArgumentException("Invalid transaction: You can only make transactions to or from your own savings account");
-        }
-        // check if the balance is going to become lower than the absolute limit
-        if ((fromAccount.getBalance() - transaction.getAmount()) < fromAccount.getAbsoluteLimit()) {
-            throw new IllegalArgumentException("Invalid transaction: Your balance cannot become lower than the absolute limit(" + fromAccount.getAbsoluteLimit() + ")");
-        }
-        // check if the daily limit is already reached
-        if (dailyLimit > fromAccount.getAbsoluteLimit()){
-            throw new IllegalArgumentException("Invalid transaction: You already reached your daily limit(" + dailyLimit + ")");
-        }
-        // check if the amount of the transaction is higher than the transaction limit
-        if (transactionLimit < transaction.getAmount()){
-            throw new IllegalArgumentException("Invalid transaction: You are cannot transfer a higher amount than your transaction limit(" + transactionLimit + ")");
-        }
+//        // check that both accounts are not the same
+//
+//        // check if the transaction is from or to a savings account and if the user is the same
+//        if ((transaction.getFromAccount().getAccountType() == AccountType.SAVINGS || transaction.getToAccount().getAccountType() == AccountType.SAVINGS) && transaction.getFromAccount().getAccountHolder() != transaction.getToAccount().getAccountHolder()){
+//            throw new IllegalArgumentException("Invalid transaction: You can only make transactions to or from your own savings account");
+//        }
+//        // check if the balance is going to become lower than the absolute limit
+//        if ((transaction.getFromAccount().getBalance() - transaction.getAmount()) < transaction.getFromAccount().getAbsoluteLimit()) {
+//            throw new IllegalArgumentException("Invalid transaction: Your balance cannot become lower than the absolute limit(" + transaction.getFromAccount().getAbsoluteLimit() + ")+");
+//        }
+//        // check if the daily limit is already reached
+//        if (dailyLimit > transaction.getFromAccount().getAbsoluteLimit()){
+//            throw new IllegalArgumentException("Invalid transaction: You already reached your daily limit(" + dailyLimit + ")");
+//        }
+//        // check if the amount of the transaction is higher than the transaction limit
+//        if (transactionLimit < transaction.getAmount()){
+//            throw new IllegalArgumentException("Invalid transaction: You are cannot transfer a higher amount than your transaction limit(" + transactionLimit + ")");
+//        }
+
         return transactionRepository.save(transaction);
     }
 
     public Transaction performDeposit(TransactionDTO dto) {
         Transaction deposit = this.mapDtoToTransaction(dto);
-        deposit.setFromAccountIban(dto.fromAccountIban());
-        deposit.setToAccountIban(bankIban);
+        deposit.setFromAccount(dto.fromAccount());
+        deposit.setToAccount(accountRepository.findAccountByIban(bankIban));
         return transactionRepository.save(deposit);
     }
 
     public Transaction performWithdrawal(TransactionDTO dto) {
         Transaction withdrawal = this.mapDtoToTransaction(dto);
-        withdrawal.setFromAccountIban(bankIban);
-        withdrawal.setToAccountIban(dto.toAccountIban());
+        withdrawal.setFromAccount(accountRepository.findAccountByIban(bankIban));
+        withdrawal.setToAccount(dto.toAccount());
         return transactionRepository.save(withdrawal);
     }
 
     public List<Transaction> getUserTransactionsByDay(Long userId, LocalDate date){
         LocalDateTime startDate = date.atStartOfDay();
         LocalDateTime endDate = date.atTime(23, 59, 59);
-        return transactionRepository.findTransactionByUserIdAndTimestampBetween(userId, startDate, endDate);
+        return transactionRepository.findTransactionsByUserIdAndTimestampBetween(userId, startDate, endDate);
     }
 
     private Transaction mapDtoToTransaction(TransactionDTO dto){
@@ -90,7 +129,6 @@ public class TransactionService {
         transaction.setTimestamp(LocalDateTime.now());
         transaction.setAmount(dto.amount());
         transaction.setDescription(dto.description());
-        transaction.setUserId(dto.userId());
         return transaction;
     }
 }

@@ -64,6 +64,24 @@ public class MyApplicationRunner implements ApplicationRunner {
         user1.setRole(Role.ROLE_USER);
         userService.add(user1);
 
+        User user2 = new User();
+        user2.setFirstName("Alba");
+        user2.setLastName("Placeres");
+        user2.setEmail("inholland2@gmail.com");
+        user2.setPassword("Test321!");
+        user2.setBsn("987654321");
+        user2.setPhoneNumber("+31123456789");
+        user2.setBirthdate("2003-12-09");
+        user2.setStreetName("Schoonzichtlaan");
+        user2.setHouseNumber(162);
+        user2.setZipCode("2015 CV");
+        user2.setCity("Haarlem");
+        user2.setCountry("Netherlands");
+        user2.setDailyLimit(1500);
+        user2.setTransactionLimit(120);
+        user2.setRole(Role.ROLE_USER);
+        userService.add(user2);
+
         Account bankAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, bankUser);
         bankAccount.setIban("NL01INHO0000000001");
         bankAccount.setBalance(1000000);
@@ -79,37 +97,43 @@ public class MyApplicationRunner implements ApplicationRunner {
         userSavingsAccount.setBalance(249.75);
         accountService.saveAccount(userSavingsAccount);
 
+        Account user2CurrentAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user2);
+        userCurrentAccount.setIban(accountService.generateIBAN());
+        userCurrentAccount.setBalance(370.15);
+        accountService.saveAccount(userCurrentAccount);
+
+        Account user2SavingsAccount = new Account(AccountType.SAVINGS, AccountStatus.ACTIVE, user2);
+        userSavingsAccount.setIban(accountService.generateIBAN());
+        userSavingsAccount.setBalance(349.25);
+        accountService.saveAccount(userSavingsAccount);
+
         Transaction transaction1 = new Transaction();
         transaction1.setTimestamp(LocalDateTime.now());
-        transaction1.setFromAccountIban("NL47INGB1234567890"); //select an actual account not a string iban
-        transaction1.setToAccountIban("NL56ABNA0987654321");
-        transaction1.setAmount(50);
-        transaction1.setDescription("test transaction");
-        transaction1.setUserId(1);
+        transaction1.setFromAccount(userCurrentAccount);
+        transaction1.setToAccount(user2CurrentAccount);
+        transaction1.setAmount(50.0);
+        transaction1.setDescription("user 1 to user 2");
 
         Transaction transaction2 = new Transaction();
         transaction2.setTimestamp(LocalDateTime.now());
-        transaction2.setFromAccountIban("NL91ABNA0417164300");
-        transaction2.setToAccountIban("NL69RABO0123456789");
-        transaction2.setAmount(25);
-        transaction2.setDescription("some random transaction");
-        transaction2.setUserId(2);
+        transaction2.setFromAccount(userCurrentAccount);
+        transaction2.setToAccount(userSavingsAccount);
+        transaction2.setAmount(25.0);
+        transaction2.setDescription("user 1 current to user 1 savings");
 
         Transaction transaction3 = new Transaction();
         transaction3.setTimestamp(LocalDateTime.now());
-        transaction3.setFromAccountIban("NL47INGB1234567841");
-        transaction3.setToAccountIban("NL56ABNA0987654352");
-        transaction3.setAmount(37);
-        transaction3.setDescription("another transaction");
-        transaction3.setUserId(1);
+        transaction3.setFromAccount(user2SavingsAccount);
+        transaction3.setToAccount(userCurrentAccount);
+        transaction3.setAmount(37.0);
+        transaction3.setDescription("user 2 savings to user 2 current");
 
         Transaction transaction4 = new Transaction();
         transaction4.setTimestamp(LocalDateTime.of(2023, 06, 01, 14, 40));
-        transaction4.setFromAccountIban("NL47INGB1234567841");
-        transaction4.setToAccountIban("NL56ABNA0987654352");
-        transaction4.setAmount(20);
-        transaction4.setDescription("different day transaction");
-        transaction4.setUserId(1);
+        transaction4.setFromAccount(user2CurrentAccount);
+        transaction4.setToAccount(userCurrentAccount);
+        transaction4.setAmount(20.0);
+        transaction4.setDescription("different day transaction user 2 to user 1");
 
         transactionRepository.save(transaction1);
         transactionRepository.save(transaction2);
