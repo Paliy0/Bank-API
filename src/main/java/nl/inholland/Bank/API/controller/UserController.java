@@ -24,7 +24,6 @@ import java.util.stream.StreamSupport;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
-
 @RequestMapping(value = "/users" , produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
