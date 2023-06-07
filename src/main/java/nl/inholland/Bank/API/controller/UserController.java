@@ -49,7 +49,7 @@ public class UserController {
                 return ResponseEntity.badRequest().build();
             }
 
-            Iterable<UserResponseDTO> users = userService.getAllUsers(hasAccount);
+            List<UserResponseDTO> users = userService.getAllUsers(hasAccount);
 
             // Perform pagination logic
             List<UserResponseDTO> paginatedUsers = StreamSupport.stream(users.spliterator(), false)
