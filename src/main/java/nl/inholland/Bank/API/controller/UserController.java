@@ -24,7 +24,6 @@ import java.util.stream.StreamSupport;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
-
 @RequestMapping(value = "/users" , produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
@@ -140,6 +139,8 @@ public class UserController {
      * HTTP Method: Get
      * URL: /users/{id}
      */
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
+    @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getLoggedInUser(@PathVariable long id) {
         try {

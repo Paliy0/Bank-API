@@ -37,8 +37,8 @@ public class WebSecurityConfig {
         httpSecurity.
                 authorizeHttpRequests((
                         authz -> authz
-                                .requestMatchers("/login", "/**", "/users").permitAll()
-                                .anyRequest().authenticated()));
+                        .requestMatchers("/login").permitAll() 
+                        .anyRequest().authenticated()));
 
         // We ensure our own filter is executed before the framework runs its own authentication filter code
         httpSecurity.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);

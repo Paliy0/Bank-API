@@ -1,15 +1,16 @@
 package nl.inholland.Bank.API.controller;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import nl.inholland.Bank.API.model.dto.LoginDTO;
-import nl.inholland.Bank.API.model.dto.TokenDTO;
 import nl.inholland.Bank.API.service.UserService;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/login")
 public class AuthController {
 
@@ -21,8 +22,6 @@ public class AuthController {
 
     @PostMapping
     public Object login(@RequestBody LoginDTO dto) throws Exception {
-            return new TokenDTO(
-                userService.login(dto.email(), dto.password())
-            );
+            return userService.login(dto.email(), dto.password());
     }
 }

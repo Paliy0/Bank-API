@@ -1,6 +1,11 @@
 package nl.inholland.Bank.API.service;
 
-import nl.inholland.Bank.API.model.*;
+import nl.inholland.Bank.API.model.Account;
+import nl.inholland.Bank.API.model.AccountStatus;
+import nl.inholland.Bank.API.model.Role;
+import nl.inholland.Bank.API.model.Transaction;
+import nl.inholland.Bank.API.model.User;
+import nl.inholland.Bank.API.model.dto.TokenDTO;
 import nl.inholland.Bank.API.model.dto.UserDLimitDTO;
 import nl.inholland.Bank.API.model.dto.UserRequestDTO;
 import nl.inholland.Bank.API.model.dto.UserResponseDTO;
@@ -14,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import ch.qos.logback.core.subst.Token;
 import nl.inholland.Bank.API.repository.UserRepository;
 import nl.inholland.Bank.API.util.JwtTokenProvider;
 
@@ -172,7 +178,7 @@ public class UserService {
         return "User was deleted successfully.";
     }
 
-    public String login(String email, String password) throws Exception {
+    public TokenDTO login(String email, String password) throws Exception {
         // See if a user with the provided username exists or throw exception
         Optional<User> optionalUser = this.userRepository.findByEmail(email);
         if (!optionalUser.isPresent()) {
@@ -183,7 +189,7 @@ public class UserService {
         // Check if the password hash matches
         if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
             // Return a JWT to the client
-            return jwtTokenProvider.createToken(user.getEmail(), user.getRole());
+            return new TokenDTO(jwtTokenProvider.createToken(user.getEmail(), user.getRole()), user.getId());
         } else {
             throw new AuthenticationException("Invalid username/password");
         }
