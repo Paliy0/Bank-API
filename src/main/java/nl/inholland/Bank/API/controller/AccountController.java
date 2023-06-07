@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class AccountController {
      * - limit - items per page (10 by default)
      * - offset - starting point (0 by default)
      */
-    @CrossOrigin
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @GetMapping
     public ResponseEntity<Iterable<AccountResponseDTO>> getAllAccounts(@RequestParam(defaultValue = "10") int limit,
                                                                        @RequestParam(defaultValue = "0") int offset) {
@@ -73,7 +74,7 @@ public class AccountController {
      * HTTP Method: GET
      * URL: /accounts/{iban}
      */
-    @CrossOrigin
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @GetMapping(value = "/{iban}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
         try {
@@ -107,7 +108,7 @@ public class AccountController {
      * HTTP Method: GET
      * URL: /accounts/myAccounts/{userId}
      */
-    @CrossOrigin
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE') || hasRole('ROLE_CUSTOMER')")
     @GetMapping(value = "/myAccounts/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<MyAccountResponseDTO>> getMyAccounts(@PathVariable Long userId) {
         try {
@@ -144,7 +145,7 @@ public class AccountController {
      * HTTP Method: GET
      * URL: /accounts/getIbanByCustomerName?firstName={accountHolderFirstName}
      */
-    @CrossOrigin
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE') || hasRole('ROLE_CUSTOMER')")
     @GetMapping(value = "/getIbanByCustomerName", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<FindAccountResponseDTO>> getIbanByCustomerName(@RequestParam String firstName) {
         try {
@@ -171,7 +172,7 @@ public class AccountController {
      * HTTP Method: POST
      * URL: /accounts
      */
-    @CrossOrigin
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PostMapping
     public ResponseEntity<String> insertAccount(@RequestBody AccountRequestDTO accountRequest) {
         try {
@@ -235,7 +236,7 @@ public class AccountController {
      * HTTP Method: PUT
      * URL: /accounts/accountStatus/{iban}
      */
-    @CrossOrigin
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PutMapping(value = "/accountStatus/{iban}")
     public ResponseEntity<String> updateAccountStatus(@PathVariable String iban, @RequestBody StatusAccountRequestDTO accountStatusRequest) {
         try {
@@ -243,7 +244,14 @@ public class AccountController {
             accountService.updateAccountStatus(iban, newAccountStatus);
             Account createdAccount = accountService.getAccountByIban(iban);
 
-            return ResponseEntity.status(HttpStatus.OK).body("Account status updated successfully: " + createdAccount.toString());
+            AccountResponseDTO accountResponseDTO = modelMapper.map(createdAccount, AccountResponseDTO.class);
+            Optional<User> userOptional = userService.getUserById(createdAccount.getAccountHolder().getId());
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                AccountUserResponseDTO accountUserResponseDTO = modelMapper.map(user, AccountUserResponseDTO.class);
+                accountResponseDTO.setUser(accountUserResponseDTO);
+            }
+            return ResponseEntity.status(HttpStatus.OK).body("Account status updated successfully: " + accountResponseDTO.toString());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }
@@ -254,6 +262,7 @@ public class AccountController {
      * HTTP Method: PUT
      * URL: /accounts/absoluteLimit/{iban}
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PutMapping(value = "/absoluteLimit/{iban}")
     public ResponseEntity<String> updateAccountAbsoluteLimit(@PathVariable String iban, @RequestBody AbsoluteLimitAccountRequestDTO accountAbsoluteLimitRequest) {
         try {
@@ -261,7 +270,15 @@ public class AccountController {
             accountService.updateAccountAbsoluteLimit(iban, absoluteLimit);
             Account createdAccount = accountService.getAccountByIban(iban);
 
-            return ResponseEntity.status(HttpStatus.OK).body("Absolute limit updated successfully: " + createdAccount.toString());
+            AccountResponseDTO accountResponseDTO = modelMapper.map(createdAccount, AccountResponseDTO.class);
+            Optional<User> userOptional = userService.getUserById(createdAccount.getAccountHolder().getId());
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                AccountUserResponseDTO accountUserResponseDTO = modelMapper.map(user, AccountUserResponseDTO.class);
+                accountResponseDTO.setUser(accountUserResponseDTO);
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body("Absolute limit updated successfully: " + accountResponseDTO.toString());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }

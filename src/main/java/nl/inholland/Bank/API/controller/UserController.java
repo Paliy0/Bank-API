@@ -38,7 +38,6 @@ public class UserController {
      * HTTP Method: Get
      * URL: /users
      */
-    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @GetMapping
     public ResponseEntity<Iterable<UserResponseDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") int skip,
@@ -49,7 +48,7 @@ public class UserController {
                 return ResponseEntity.badRequest().build();
             }
 
-            Iterable<UserResponseDTO> users = userService.getAllUsers(hasAccount);
+            List<UserResponseDTO> users = userService.getAllUsers(hasAccount);
 
             // Perform pagination logic
             List<UserResponseDTO> paginatedUsers = StreamSupport.stream(users.spliterator(), false)
