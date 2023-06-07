@@ -10,7 +10,7 @@ import nl.inholland.Bank.API.model.dto.LoginDTO;
 import nl.inholland.Bank.API.service.UserService;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+//@CrossOrigin(origins = "*")
 @RequestMapping("/login")
 public class AuthController {
 

@@ -18,8 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
-
+//@CrossOrigin(origins = "*")
 @RequestMapping(value = "/accounts", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AccountController {
     private final AccountService accountService;
@@ -40,6 +39,7 @@ public class AccountController {
      * - limit - items per page (10 by default)
      * - offset - starting point (0 by default)
      */
+    @CrossOrigin
     @GetMapping
     public ResponseEntity<Iterable<AccountResponseDTO>> getAllAccounts(@RequestParam(defaultValue = "10") int limit,
                                                                        @RequestParam(defaultValue = "0") int offset) {
@@ -73,6 +73,7 @@ public class AccountController {
      * HTTP Method: GET
      * URL: /accounts/{iban}
      */
+    @CrossOrigin
     @GetMapping(value = "/{iban}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
         try {
@@ -106,6 +107,7 @@ public class AccountController {
      * HTTP Method: GET
      * URL: /accounts/myAccounts/{userId}
      */
+    @CrossOrigin
     @GetMapping(value = "/myAccounts/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<MyAccountResponseDTO>> getMyAccounts(@PathVariable Long userId) {
         try {
@@ -142,6 +144,7 @@ public class AccountController {
      * HTTP Method: GET
      * URL: /accounts/getIbanByCustomerName?firstName={accountHolderFirstName}
      */
+    @CrossOrigin
     @GetMapping(value = "/getIbanByCustomerName", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<FindAccountResponseDTO>> getIbanByCustomerName(@RequestParam String firstName) {
         try {
@@ -168,6 +171,7 @@ public class AccountController {
      * HTTP Method: POST
      * URL: /accounts
      */
+    @CrossOrigin
     @PostMapping
     public ResponseEntity<String> insertAccount(@RequestBody AccountRequestDTO accountRequest) {
         try {
@@ -231,6 +235,7 @@ public class AccountController {
      * HTTP Method: PUT
      * URL: /accounts/accountStatus/{iban}
      */
+    @CrossOrigin
     @PutMapping(value = "/accountStatus/{iban}")
     public ResponseEntity<String> updateAccountStatus(@PathVariable String iban, @RequestBody StatusAccountRequestDTO accountStatusRequest) {
         try {
