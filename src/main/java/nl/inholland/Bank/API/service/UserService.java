@@ -2,7 +2,6 @@ package nl.inholland.Bank.API.service;
 
 import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.AccountStatus;
-import nl.inholland.Bank.API.model.Role;
 import nl.inholland.Bank.API.model.Transaction;
 import nl.inholland.Bank.API.model.User;
 import nl.inholland.Bank.API.model.dto.TokenDTO;
@@ -14,13 +13,10 @@ import nl.inholland.Bank.API.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import ch.qos.logback.core.subst.Token;
-import nl.inholland.Bank.API.repository.UserRepository;
 import nl.inholland.Bank.API.util.JwtTokenProvider;
 
 import java.time.LocalDate;
@@ -35,7 +31,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AccountService accountService;
-    private final ModelMapper modelMapper;
     private final TransactionService transactionService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
@@ -44,7 +39,7 @@ public class UserService {
     public UserService(UserRepository userRepository, TransactionService transactionService, @Lazy AccountService accountService, BCryptPasswordEncoder bCryptPasswordEncoder, JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
         this.accountService = accountService;
-        this.modelMapper = new ModelMapper();
+        new ModelMapper();
         this.transactionService = transactionService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
