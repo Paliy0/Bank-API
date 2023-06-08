@@ -12,9 +12,9 @@ public class Transaction {
     @Id
     private Long id;
     private LocalDateTime timestamp;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST) // Use the cascade to save the account before the transcation
     private Account fromAccount;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST) // Use the cascade to save the account before the transcation
     private Account toAccount;
     private Double amount;
     private String description;

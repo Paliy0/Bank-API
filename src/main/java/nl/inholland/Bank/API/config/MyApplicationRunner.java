@@ -98,13 +98,13 @@ public class MyApplicationRunner implements ApplicationRunner {
         accountService.saveAccount(userSavingsAccount);
 
         Account user2CurrentAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user2);
-        userCurrentAccount.setIban(accountService.generateIBAN());
-        userCurrentAccount.setBalance(370.15);
+        user2CurrentAccount.setIban(accountService.generateIBAN());
+        user2CurrentAccount.setBalance(370.15);
         accountService.saveAccount(userCurrentAccount);
 
         Account user2SavingsAccount = new Account(AccountType.SAVINGS, AccountStatus.ACTIVE, user2);
-        userSavingsAccount.setIban(accountService.generateIBAN());
-        userSavingsAccount.setBalance(349.25);
+        user2SavingsAccount.setIban(accountService.generateIBAN());
+        user2SavingsAccount.setBalance(349.25);
         accountService.saveAccount(userSavingsAccount);
 
         Transaction transaction1 = new Transaction();

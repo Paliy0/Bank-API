@@ -18,4 +18,13 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
     List<Transaction> findTransactionsByUserIdAndAmountLessThan(Long userId, Double amount);
     List<Transaction> findTransactionsByUserIdAndAmountEquals(Long userId, Double amount);
     List<Transaction> findTransactionsByUserIdAndAmountGreaterThan(Long userId, Double amount);
+
+    List<Transaction> findAllByTimestampBetweenAndFromAccountIbanAndToAccountIbanAndAmountGreaterThanEqualAndAmountLessThanEqual(
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            Account fromAccount,
+            Account toAccount,
+            Double minAmountValue,
+            Double maxAmountValue
+            );
 }

@@ -1,5 +1,6 @@
 package nl.inholland.Bank.API.controller;
 
+import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.Transaction;
 import nl.inholland.Bank.API.model.dto.TransactionDTO;
 import nl.inholland.Bank.API.service.TransactionService;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,29 +22,37 @@ import java.util.Optional;
 public class TransactionController {
     private final TransactionService transactionService;
 
-    private final ModelMapper modelMapper;
-    
+
     public TransactionController(TransactionService transactionService){
         this.transactionService = transactionService;
-        modelMapper = new ModelMapper();
     }
 
+//    @GetMapping
+//    public ResponseEntity<Iterable<Transaction>> getAllTransactions(@PathVariable Long userId,
+//                                                                    @RequestParam Optional<Integer> page,
+//                                                                    @RequestParam Optional<Integer> limit,
+//                                                                    @RequestParam Optional<LocalDate> startDate,
+//                                                                    @RequestParam Optional<LocalDate> endDate,
+//                                                                    @RequestParam Optional<String> fromIban,
+//                                                                    @RequestParam Optional<String> toIban,
+//                                                                    @RequestParam Optional<Double> minAmount,
+//                                                                    @RequestParam Optional<Double> maxAmount) {
+//        try {
+//            return ResponseEntity.ok().body(transactionService.getAllTransactions(userId, page, limit, startDate, endDate, fromIban, toIban, minAmount, maxAmount));
+//        } catch (Exception e) {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
+
     @GetMapping
-    public ResponseEntity<Iterable<Transaction>> getAllTransactions(@PathVariable Long userId,
-                                                                    @RequestParam Optional<Integer> page,
-                                                                    @RequestParam Optional<Integer> limit,
-                                                                    @RequestParam Optional<LocalDate> startDate,
-                                                                    @RequestParam Optional<LocalDate> endDate,
-                                                                    @RequestParam Optional<String> fromIban,
-                                                                    @RequestParam Optional<String> toIban,
-                                                                    @RequestParam Optional<Double> minAmount,
-                                                                    @RequestParam Optional<Double> maxAmount) {
+    public ResponseEntity<Iterable<Transaction>> getAllTransactions() {
         try {
-            return ResponseEntity.ok().body(transactionService.getAllTransactions(userId, page, limit, startDate, endDate, fromIban, toIban, minAmount, maxAmount));
+            return ResponseEntity.ok().body(transactionService.getAllTransactions());
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
     @PostMapping
     public ResponseEntity<Object> postTransaction(@RequestBody TransactionDTO dto) {
