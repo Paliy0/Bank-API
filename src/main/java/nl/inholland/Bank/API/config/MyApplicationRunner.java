@@ -83,7 +83,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         userService.add(user2);
 
         boolean hasAccount = false;
-        userService.getAllUsers(hasAccount).forEach(System.out::println);
+        userService.getAllUsers(hasAccount, 0, 50).forEach(System.out::println);
 
         Account bankAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, bankUser);
         bankAccount.setIban("NL01INHO0000000001");

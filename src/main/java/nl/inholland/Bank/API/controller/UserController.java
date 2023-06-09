@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import nl.inholland.Bank.API.service.UserService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,7 +25,7 @@ import java.util.stream.StreamSupport;
 
 @RestController
 //@CrossOrigin(origins = "*")
-@RequestMapping(value = "/users" , produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
@@ -38,7 +39,7 @@ public class UserController {
      * HTTP Method: Get
      * URL: /users
      */
-    @GetMapping
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<UserResponseDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") int skip,
             @RequestParam(defaultValue = "50") int limit,
@@ -48,15 +49,9 @@ public class UserController {
                 return ResponseEntity.badRequest().build();
             }
 
-            List<UserResponseDTO> users = userService.getAllUsers(hasAccount);
+            List<UserResponseDTO> users = userService.getAllUsers(hasAccount, skip, limit);
 
-            // Perform pagination logic
-            List<UserResponseDTO> paginatedUsers = StreamSupport.stream(users.spliterator(), false)
-                    .skip(skip)
-                    .limit(limit)
-                    .collect(Collectors.toList());
-
-            return ResponseEntity.ok().body(paginatedUsers);
+            return ResponseEntity.ok().body(users);
         }catch(Exception e){
             return ResponseEntity.notFound().build();
         }
@@ -68,43 +63,29 @@ public class UserController {
      * URL: /users
      */
 
-    @PostMapping
-    public ResponseEntity<Object> registerUser(@RequestBody UserRequestDTO userRequest) {
+    @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity registerUser(@RequestBody UserRequestDTO userRequest) {
         try {
+            String error = userService.registerChecking(userRequest);
             //check if new user detail is valid
-            if(!validateEmail(userRequest.email())){
-                return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request. User with this email already exists");
+            if(!error.isEmpty()){
+                return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request. " + error);
+            }else {
+                boolean registered = userService.registerLogic(userRequest);
+                if(registered) {
+                    return ResponseEntity.status(HttpStatus.OK).body("User created successfully");
+                }
+                else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Something went wrong. User not created.");
+                }
             }
-            if(!checkUserBody(userRequest)){
-                return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request. Invalid User Information.");
-            }
-
-            //model mapper is not working with Record DTO classes????
-            //User newUser = modelMapper.map(userRequest, User.class);
-
-            User newUser = new User();
-            newUser.setFirstName(userRequest.firstName());
-            newUser.setLastName(userRequest.lastName());
-            newUser.setEmail(userRequest.email());
-            newUser.setPassword(userRequest.password());
-            newUser.setBsn(userRequest.bsn());
-            newUser.setPhoneNumber(userRequest.phoneNumber());
-            newUser.setBirthdate(userRequest.birthdate());
-            newUser.setStreetName(userRequest.streetName());
-            newUser.setHouseNumber(userRequest.houseNumber());
-            newUser.setCity(userRequest.city());
-            newUser.setZipCode(userRequest.zipCode());
-            newUser.setCountry(userRequest.country());
-            newUser.setRole(Role.ROLE_USER);
-            newUser.setTransactionLimit(100);
-            newUser.setDailyLimit(200);
-
-            userService.add(newUser);
-
-            return  ResponseEntity.status(HttpStatus.CREATED).body("User created successfully");
         }
         catch(Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    Collections.singletonMap(
+                            "Error", e.getMessage()
+                    )
+            );
         }
     }
 
@@ -114,21 +95,23 @@ public class UserController {
      * URL: users/updateInformation/{id}
      */
     @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
-    @PutMapping(value = "/updateInformation/{id}")
+    @PutMapping(value = "/updateInformation/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> changeUserData(@PathVariable long id, @RequestBody UserRequestDTO newUserData){
         try{
             Optional<User> response = userService.getUserById(id);
             User user = response.get();
 
-            if(!validateEmailChange(newUserData.email(), user.getEmail())){
-                return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request. User with this email already exists or email is in wrong format");
+            String error = userService.updateChecking(newUserData, user.getEmail());
+            if(!error.isEmpty()){
+                return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request. " + error);
+            }else {
+                boolean updated = userService.update(newUserData, id);
+                if(updated){
+                    return ResponseEntity.status(HttpStatus.CREATED).body("Information updated successfully");
+                }else{
+                    return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request. Something went wrong. Userdata is not updated.");
+                }
             }
-            if(!checkUserBody(newUserData)){
-                return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad request. Invalid User Information.");
-            }
-            userService.update(newUserData, id);
-
-            return  ResponseEntity.status(HttpStatus.CREATED).body("Information updated successfully");
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
 
@@ -159,7 +142,7 @@ public class UserController {
     @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable long id){
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(userService.deleteUserOrDeactivate(id));
+        return userService.deleteUserOrDeactivate(id);
     }
 
     /**
@@ -219,48 +202,6 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
-    }
-
-    /**
-     * Checking Methods
-     */
-    private boolean checkUserBody(UserRequestDTO userBody) {
-
-        if (!(userBody.firstName().length() > 1 &&
-                userBody.lastName().length() > 1 &&
-                userBody.streetName().length() > 2 &&
-                userBody.houseNumber() > 0 &&
-                userBody.zipCode().length() > 3 &&
-                userBody.city().length() > 3 &&
-                userBody.country().length() > 3 &&
-                isStrongPassword(userBody.password()))
-        ) {
-            return false;
-        }
-
-        return true;
-    }
-    private boolean validateEmail(String emailStr) {
-        //check if email already exists
-        if(userService.getUserByEmail(emailStr) != null){
-            return false;
-        }
-
-        //check correct email format
-        return emailStr.matches("^(.+)@(.+)$");
-    }
-    private boolean validateEmailChange(String newEmailStr, String oldEmailStr){
-
-        if(!newEmailStr.equals(oldEmailStr)){
-            return validateEmail(newEmailStr);
-        }else{
-            return newEmailStr.matches("^(.+)@(.+)$");
-        }
-    }
-
-    //for password containing at least 8 letters, one uppercase/lowercase, a number, a special character
-    private boolean isStrongPassword(String password){
-        return password.matches("(?=^.{8,}$)((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$");
     }
 
 }
