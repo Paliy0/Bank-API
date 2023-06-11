@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-@Transactional
 public class MyApplicationRunner implements ApplicationRunner {
 
     private final AccountService accountService;
@@ -26,6 +25,7 @@ public class MyApplicationRunner implements ApplicationRunner {
     }
 
     @Override
+    @Transactional
     public void run(ApplicationArguments args) throws Exception {
 
         User bankUser = new User();
@@ -82,11 +82,6 @@ public class MyApplicationRunner implements ApplicationRunner {
         user2.setRole(Role.ROLE_USER);
         userService.add(user2);
 
-        Account bankAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, bankUser);
-        bankAccount.setIban("NL01INHO0000000001");
-        bankAccount.setBalance(1000000);
-        accountService.saveAccount(bankAccount);
-
         Account userCurrentAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user1);
         userCurrentAccount.setIban(accountService.generateIBAN());
         userCurrentAccount.setBalance(250.25);
@@ -100,40 +95,48 @@ public class MyApplicationRunner implements ApplicationRunner {
         Account user2CurrentAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user2);
         user2CurrentAccount.setIban(accountService.generateIBAN());
         user2CurrentAccount.setBalance(370.15);
-        accountService.saveAccount(userCurrentAccount);
+        accountService.saveAccount(user2CurrentAccount);
 
         Account user2SavingsAccount = new Account(AccountType.SAVINGS, AccountStatus.ACTIVE, user2);
         user2SavingsAccount.setIban(accountService.generateIBAN());
         user2SavingsAccount.setBalance(349.25);
-        accountService.saveAccount(userSavingsAccount);
+        accountService.saveAccount(user2SavingsAccount);
 
         Transaction transaction1 = new Transaction();
+        transaction1.setUser(user1);
         transaction1.setTimestamp(LocalDateTime.now());
         transaction1.setFromAccount(userCurrentAccount);
         transaction1.setToAccount(user2CurrentAccount);
         transaction1.setAmount(50.0);
-        transaction1.setDescription("user 1 to user 2");
+        transaction1.setDescription("user 2 to user 3");
+        transaction1.setTransactionType(TransactionType.TRANSACTION);
 
         Transaction transaction2 = new Transaction();
+        transaction2.setUser(user1);
         transaction2.setTimestamp(LocalDateTime.now());
         transaction2.setFromAccount(userCurrentAccount);
         transaction2.setToAccount(userSavingsAccount);
         transaction2.setAmount(25.0);
-        transaction2.setDescription("user 1 current to user 1 savings");
+        transaction2.setDescription("user 2 current to user 2 savings");
+        transaction2.setTransactionType(TransactionType.TRANSACTION);
 
         Transaction transaction3 = new Transaction();
+        transaction3.setUser(user2);
         transaction3.setTimestamp(LocalDateTime.now());
         transaction3.setFromAccount(user2SavingsAccount);
-        transaction3.setToAccount(userCurrentAccount);
+        transaction3.setToAccount(user2CurrentAccount);
         transaction3.setAmount(37.0);
-        transaction3.setDescription("user 2 savings to user 2 current");
+        transaction3.setDescription("user 3 savings to user 3 current");
+        transaction3.setTransactionType(TransactionType.TRANSACTION);
 
         Transaction transaction4 = new Transaction();
+        transaction4.setUser(user2);
         transaction4.setTimestamp(LocalDateTime.of(2023, 06, 01, 14, 40));
         transaction4.setFromAccount(user2CurrentAccount);
         transaction4.setToAccount(userCurrentAccount);
         transaction4.setAmount(20.0);
-        transaction4.setDescription("different day transaction user 2 to user 1");
+        transaction4.setDescription("different day transaction user 3 to user 2");
+        transaction4.setTransactionType(TransactionType.TRANSACTION);
 
         transactionRepository.save(transaction1);
         transactionRepository.save(transaction2);

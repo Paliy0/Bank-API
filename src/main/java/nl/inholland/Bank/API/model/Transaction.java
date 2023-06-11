@@ -1,73 +1,44 @@
 package nl.inholland.Bank.API.model;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="transactions")
+@Data
+@NoArgsConstructor
 public class Transaction {
 
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_seq")
     @Id
+    @Column
     private Long id;
+
+    @Column
     private LocalDateTime timestamp;
-    @ManyToOne(cascade = CascadeType.PERSIST) // Use the cascade to save the account before the transcation
+
+    @OneToOne
+    @Nullable
     private Account fromAccount;
-    @ManyToOne(cascade = CascadeType.PERSIST) // Use the cascade to save the account before the transcation
+    @OneToOne
+    @Nullable
     private Account toAccount;
+
+    @Column
     private Double amount;
+
+    @Column
     private String description;
+
     @ManyToOne
+    @PrimaryKeyJoinColumn
     private User user;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public LocalDateTime getTimestamp() { return timestamp; }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-    
-    public Account getFromAccount() {
-        return fromAccount;
-    }
-
-    public void setFromAccount(Account fromAccount) {
-        this.fromAccount = fromAccount;
-    }
-    
-    public Account getToAccount() {
-        return toAccount;
-    }
-
-    public void setToAccount(Account toAccount) {
-        this.toAccount = toAccount;
-    }
-    
-    public Double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Double amount) {
-        this.amount = amount;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public User getUser() { return fromAccount.getAccountHolder(); }
+    @Column
+    private TransactionType transactionType;
 
     @Override
     public String toString() {
@@ -79,6 +50,7 @@ public class Transaction {
         sb.append(", amount=").append(amount).append('\'');
         sb.append(", description=").append(description).append('\'');
         sb.append(", user=").append(user).append('\'');
+        sb.append(", transactionType=").append(transactionType).append('\'');
         sb.append('}');
         return sb.toString();
     }

@@ -1,70 +1,66 @@
 package nl.inholland.Bank.API.controller;
 
-import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.Transaction;
-import nl.inholland.Bank.API.model.dto.TransactionDTO;
+import nl.inholland.Bank.API.model.TransactionType;
+import nl.inholland.Bank.API.model.dto.TransactionRequestDTO;
+import nl.inholland.Bank.API.model.dto.TransactionResponseDTO;
 import nl.inholland.Bank.API.service.TransactionService;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@RestController
-@RequestMapping(value = "/transactions", produces = MediaType.APPLICATION_JSON_VALUE)
+@Controller
+@RequestMapping(value = "/transactions")
+@CrossOrigin(origins = "*")
 public class TransactionController {
     private final TransactionService transactionService;
-
 
     public TransactionController(TransactionService transactionService){
         this.transactionService = transactionService;
     }
 
-//    @GetMapping
-//    public ResponseEntity<Iterable<Transaction>> getAllTransactions(@PathVariable Long userId,
-//                                                                    @RequestParam Optional<Integer> page,
-//                                                                    @RequestParam Optional<Integer> limit,
-//                                                                    @RequestParam Optional<LocalDate> startDate,
-//                                                                    @RequestParam Optional<LocalDate> endDate,
-//                                                                    @RequestParam Optional<String> fromIban,
-//                                                                    @RequestParam Optional<String> toIban,
-//                                                                    @RequestParam Optional<Double> minAmount,
-//                                                                    @RequestParam Optional<Double> maxAmount) {
-//        try {
-//            return ResponseEntity.ok().body(transactionService.getAllTransactions(userId, page, limit, startDate, endDate, fromIban, toIban, minAmount, maxAmount));
-//        } catch (Exception e) {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getAllTransactions(
+            @RequestParam Optional<Integer> page,
+            @RequestParam Optional<Integer> limit,
+            @RequestParam Optional<Long> userId,
+            @RequestParam Optional<LocalDate> startDate,
+            @RequestParam Optional <LocalDate> endDate,
+            @RequestParam Optional<Double> minAmount,
+            @RequestParam Optional<Double> maxAmount,
+            @RequestParam Optional<TransactionType> transactionType) {
+        List<Transaction> transactions = transactionService.getAllTransactions(page.orElse(0), limit.orElse(10),
+                userId.orElse(null), startDate.orElse(null), endDate.orElse(null), minAmount.orElse(0.00),
+                maxAmount.orElse(Double.MAX_VALUE), transactionType.orElse(null));
 
-    @GetMapping
-    public ResponseEntity<Iterable<Transaction>> getAllTransactions() {
-        try {
-            return ResponseEntity.ok().body(transactionService.getAllTransactions());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        List<TransactionResponseDTO> responses = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            responses.add(buildTransactionResponse(transaction));
         }
+
+        return ResponseEntity.status(200).body(responses);
     }
 
-
     @PostMapping
-    public ResponseEntity<Object> postTransaction(@RequestBody TransactionDTO dto) {
+    public ResponseEntity<Object> postTransaction(@RequestBody TransactionRequestDTO dto) {
         try {
             if (dto != null){
-                transactionService.performTransaction(dto);
-                return ResponseEntity.status(HttpStatus.CREATED).body("Transaction successful.");
+                Transaction transaction = transactionService.performTransaction(dto);
+                TransactionResponseDTO response = buildTransactionResponse(transaction);
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
             } else{
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Transaction data is missing or null.");
             }
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 
@@ -78,25 +74,25 @@ public class TransactionController {
     }
 
     @PostMapping(value = "/atm/deposit")
-    public ResponseEntity<?> performDeposit(@RequestBody TransactionDTO dto) {
+    public ResponseEntity<?> performDeposit(@RequestBody TransactionRequestDTO dto) {
         try {
             if (dto != null){
-                transactionService.performDeposit(dto);
-                return ResponseEntity.status(HttpStatus.CREATED).body("Deposit successful.");
+                Transaction deposit = transactionService.performDeposit(dto);
+                return ResponseEntity.status(HttpStatus.CREATED).body(deposit);
             } else{
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Deposit data is missing or null.");
             }
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 
     @PostMapping(value = "/atm/withdrawal")
-    public ResponseEntity<?> performWithdrawal(@RequestBody TransactionDTO dto) {
+    public ResponseEntity<?> performWithdrawal(@RequestBody TransactionRequestDTO dto) {
         try {
             if (dto != null){
-                transactionService.performWithdrawal(dto);
-                return ResponseEntity.status(HttpStatus.CREATED).body("Withdrawal successful.");
+                Transaction withdrawal = transactionService.performWithdrawal(dto);
+                return ResponseEntity.status(HttpStatus.CREATED).body(withdrawal);
             } else{
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Withdrawal data is missing or null.");
             }
@@ -117,5 +113,18 @@ public class TransactionController {
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    private TransactionResponseDTO buildTransactionResponse(Transaction transaction) {
+        return new TransactionResponseDTO(
+                transaction.getId(),
+                transaction.getUser().getFirstName() + " " + transaction.getUser().getLastName(),
+                transaction.getFromAccount().getIban(),
+                transaction.getToAccount().getIban(),
+                transaction.getAmount(),
+                transaction.getTimestamp(),
+                transaction.getDescription(),
+                transaction.getTransactionType()
+        );
     }
 }

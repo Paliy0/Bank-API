@@ -53,7 +53,15 @@ public class AccountService {
         User accountHolder = newAccount.getAccountHolder();
         if (accountHolder.getRole().equals(Role.ROLE_USER)) {
             accountHolder.setRole(Role.ROLE_CUSTOMER);
-            userService.add(accountHolder);
+            if (newAccount.getAccountType() == AccountType.CURRENT) {
+                accountHolder.setCurrentAccount(newAccount);
+                userService.add(accountHolder);
+            } else if (newAccount.getAccountType() == AccountType.SAVINGS){
+                accountHolder.setSavingsAccount(newAccount);
+                userService.add(accountHolder);
+            } else {
+                // Invalid operation
+            }
         }
         accountRepository.save(newAccount);
     }
