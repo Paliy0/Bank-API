@@ -1,10 +1,12 @@
 package nl.inholland.Bank.API.model;
 
-import jakarta.annotation.Nullable;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import nl.inholland.Bank.API.model.Role;
 
 @NoArgsConstructor(force = true)
 @Entity
@@ -30,13 +32,8 @@ public class User {
     private String country;
     private int dailyLimit;
     private int transactionLimit;
+
     private Role role;
-    @OneToOne (cascade = CascadeType.ALL)
-    @Nullable
-    private Account currentAccount;
-    @OneToOne (cascade = CascadeType.ALL)
-    @Nullable
-    private Account savingsAccount;
 
     @Override
     public String toString() {
