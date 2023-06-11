@@ -1,6 +1,5 @@
 package nl.inholland.Bank.API.controller;
 
-import nl.inholland.Bank.API.model.Role;
 import nl.inholland.Bank.API.model.User;
 import nl.inholland.Bank.API.model.dto.UserDLimitDTO;
 import nl.inholland.Bank.API.model.dto.UserRequestDTO;
@@ -19,8 +18,6 @@ import nl.inholland.Bank.API.service.UserService;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 
 @RestController
@@ -60,11 +57,11 @@ public class UserController {
     /**
      * Post a user
      * HTTP Method: POST
-     * URL: /users
+     * URL: /users/register
      */
 
     @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity registerUser(@RequestBody UserRequestDTO userRequest) {
+    public ResponseEntity<Object> registerUser(@RequestBody UserRequestDTO userRequest) {
         try {
             String error = userService.registerChecking(userRequest);
             //check if new user detail is valid
