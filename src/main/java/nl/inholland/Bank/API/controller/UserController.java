@@ -89,7 +89,7 @@ public class UserController {
      * HTTP Method: PUT
      * URL: users/updateInformation/{id}
      */
-    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
     @PutMapping(value = "/updateInformation/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> changeUserData(@PathVariable long id, @RequestBody UserRequestDTO newUserData){
         try{
