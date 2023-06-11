@@ -1,26 +1,20 @@
 package nl.inholland.Bank.API.controller;
 
-import nl.inholland.Bank.API.model.Role;
 import nl.inholland.Bank.API.model.User;
 import nl.inholland.Bank.API.model.dto.UserDLimitDTO;
 import nl.inholland.Bank.API.model.dto.UserRequestDTO;
 import nl.inholland.Bank.API.model.dto.UserResponseDTO;
 import nl.inholland.Bank.API.model.dto.UserTLimitDTO;
-
+import nl.inholland.Bank.API.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-
-import nl.inholland.Bank.API.service.UserService;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 
 @RestController
@@ -39,6 +33,7 @@ public class UserController {
      * HTTP Method: Get
      * URL: /users
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<UserResponseDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") int skip,
