@@ -46,29 +46,47 @@ public class MyApplicationRunner implements ApplicationRunner {
         bankUser.setRole(Role.ROLE_EMPLOYEE);
         userService.add(bankUser);
 
-        User user1 = new User();
-        user1.setFirstName("Sasa");
-        user1.setLastName("Crow");
-        user1.setPassword("Test123!");
-        user1.setEmail("inholland1@gmail.com");
-        user1.setBsn("123455789");
-        user1.setPhoneNumber("+31654557890");
-        user1.setBirthdate("1990-07-20");
-        user1.setStreetName("Schoonzichtlaan");
-        user1.setHouseNumber(218);
-        user1.setZipCode("2015 CL");
-        user1.setCity("Haarlem");
-        user1.setCountry("Netherlands");
-        user1.setDailyLimit(1000);
-        user1.setTransactionLimit(100);
-        user1.setRole(Role.ROLE_CUSTOMER);
-        userService.add(user1);
+        User customer = new User();
+        customer.setFirstName("Sasa");
+        customer.setLastName("Crow");
+        customer.setPassword("Test123!");
+        customer.setEmail("sasa@gmail.com");
+        customer.setBsn("123455789");
+        customer.setPhoneNumber("+31654557890");
+        customer.setBirthdate("1990-07-20");
+        customer.setStreetName("Schoonzichtlaan");
+        customer.setHouseNumber(218);
+        customer.setZipCode("2015 CL");
+        customer.setCity("Haarlem");
+        customer.setCountry("Netherlands");
+        customer.setDailyLimit(1000);
+        customer.setTransactionLimit(100);
+        customer.setRole(Role.ROLE_CUSTOMER);
+        userService.add(customer);
+        
+        User employee = new User();
+        employee.setFirstName("employee");
+        employee.setLastName("Crow");
+        employee.setPassword("Test123!");
+        employee.setEmail("employee@gmail.com");
+        employee.setBsn("123455789");
+        employee.setPhoneNumber("+31654557890");
+        employee.setBirthdate("1990-07-20");
+        employee.setStreetName("Schoonzichtlaan");
+        employee.setHouseNumber(218);
+        employee.setZipCode("2015 CL");
+        employee.setCity("Haarlem");
+        employee.setCountry("Netherlands");
+        employee.setDailyLimit(1000);
+        employee.setTransactionLimit(100);
+        employee.setRole(Role.ROLE_EMPLOYEE);
+        userService.add(employee);
 
         User user2 = new User();
         user2.setFirstName("Jo");
         user2.setLastName("Becker");
-        user2.setPassword("Secret123!");
-        user2.setEmail("inholland@student.nl");
+        user2.setPassword("Test123!");
+        user2.setEmail("jo@student.nl");
         user2.setBsn("015754702");
         user2.setPhoneNumber("+49015754702");
         user2.setBirthdate("1990-07-20");
@@ -79,7 +97,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         user2.setCountry("Netherlands");
         user2.setDailyLimit(200);
         user2.setTransactionLimit(100);
-        user2.setRole(Role.ROLE_CUSTOMER);
+        user2.setRole(Role.ROLE_USER);
         userService.add(user2);
 
         boolean hasAccount = false;
@@ -90,12 +108,12 @@ public class MyApplicationRunner implements ApplicationRunner {
         bankAccount.setBalance(1000000);
         accountService.saveAccount(bankAccount);
 
-        Account userCurrentAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, user1);
+        Account userCurrentAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, customer);
         userCurrentAccount.setIban(accountService.generateIBAN());
         userCurrentAccount.setBalance(250.25);
         accountService.saveAccount(userCurrentAccount);
 
-        Account userSavingsAccount = new Account(AccountType.SAVINGS, AccountStatus.ACTIVE, user1);
+        Account userSavingsAccount = new Account(AccountType.SAVINGS, AccountStatus.ACTIVE, customer);
         userSavingsAccount.setIban(accountService.generateIBAN());
         userSavingsAccount.setBalance(249.75);
         accountService.saveAccount(userSavingsAccount);
