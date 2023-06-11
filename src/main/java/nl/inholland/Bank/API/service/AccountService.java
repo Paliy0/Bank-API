@@ -203,7 +203,7 @@ public class AccountService {
         return accountResponseDTO;
     }
 
-    ////////////////////////////////////////////////IBAN////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////GENERATE IBAN///////////////////////////////////////////////////////
 
     public String generateIBAN() {
         String iban;
@@ -230,7 +230,6 @@ public class AccountService {
         return sb.toString();
     }
 
-    //chatGPT method following the official IBAN creation algorithm
     private static String calculateCheckDigits(String iban) {
         iban = iban.substring(4) + iban.substring(0, 2) + "00";
 
