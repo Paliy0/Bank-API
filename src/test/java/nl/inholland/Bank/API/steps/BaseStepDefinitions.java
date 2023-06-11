@@ -1,4 +1,4 @@
-package io.swagger.steps;
+package nl.inholland.Bank.API.steps;
 
 import lombok.extern.slf4j.Slf4j;
 import nl.inholland.Bank.API.steps.CucumberContextConfig;

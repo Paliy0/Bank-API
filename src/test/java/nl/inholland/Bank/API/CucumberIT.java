@@ -1,4 +1,4 @@
-package nl.inholland.apiguitarshop;
+package nl.inholland.Bank.API;
 
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
