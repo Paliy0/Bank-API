@@ -69,6 +69,9 @@ public class UserService {
         if(!checkUserBody(userRequest)){
             return  "Bad request. Invalid User Information.";
         }
+        if(!isStrongPassword(userRequest.password())){
+            return "Bad request. Password is not strong enough";
+        }
         return errorMessage;
     }
     public boolean registerLogic(UserRequestDTO userRequest){
@@ -249,8 +252,7 @@ public class UserService {
                 userBody.houseNumber() > 0 &&
                 userBody.zipCode().length() > 3 &&
                 userBody.city().length() > 3 &&
-                userBody.country().length() > 3 &&
-                isStrongPassword(userBody.password()))
+                userBody.country().length() > 3)
         ) {
             return false;
         }
