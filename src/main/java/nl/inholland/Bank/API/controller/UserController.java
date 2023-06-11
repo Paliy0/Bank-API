@@ -57,11 +57,11 @@ public class UserController {
     /**
      * Post a user
      * HTTP Method: POST
-     * URL: /users
+     * URL: /users/register
      */
 
     @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity <Object> registerUser(@RequestBody UserRequestDTO userRequest) {
+    public ResponseEntity<Object> registerUser(@RequestBody UserRequestDTO userRequest) {
         try {
             String error = userService.registerChecking(userRequest);
             //check if new user detail is valid
