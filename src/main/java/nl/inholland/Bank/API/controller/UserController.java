@@ -118,7 +118,6 @@ public class UserController {
      * HTTP Method: Get
      * URL: /users/{id}
      */
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getLoggedInUser(@PathVariable long id) {
@@ -145,7 +144,6 @@ public class UserController {
      * HTTP Method: GET
      * URL: /users/dailyLimit/{id}
      */
-    @PreAuthorize("hasRole('ROLE_EMPLOYEE') || hasRole('ROLE_CUSTOMER')")
     @GetMapping(value = "dailyLimit/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getDailyLimitById(@PathVariable long id) {
         try {
@@ -175,7 +173,6 @@ public class UserController {
      * HTTP Method: GET
      * URL: /users/transactionLimit/{id}
      */
-    @PreAuthorize("hasRole('ROLE_EMPLOYEE') || hasRole('ROLE_CUSTOMER')")
     @GetMapping(value = "transactionLimit/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getTransactionLimitById(@PathVariable long id) {
         try {
@@ -190,6 +187,7 @@ public class UserController {
      * HTTP Method: PUT
      * URL: /users/{userId}/transactionLimit
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PutMapping(value = "/{userId}/transactionLimit", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserTLimitDTO> updateTransactionLimitById(@PathVariable Long userId, @RequestParam int transactionLimit) {
         try {

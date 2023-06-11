@@ -232,11 +232,13 @@ public class UserService {
                 account.setAccountStatus(AccountStatus.INACTIVE);
                 accountService.saveAccount(account);
             }
-            return ResponseEntity.ok("All the accounts were deactivated successfully. User with accounts cannot be deleted.");
+            return ResponseEntity.status(204).body("All the accounts were deactivated successfully. User with accounts cannot be deleted.");
+
         }
 
         userRepository.deleteById(userId);
-        return ResponseEntity.ok("User was deleted successfully.");
+        return ResponseEntity.status(204).body("User was deleted successfully.");
+
     }
     /**
      * Checking Methods
