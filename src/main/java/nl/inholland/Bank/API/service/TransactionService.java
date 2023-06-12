@@ -7,7 +7,6 @@ import nl.inholland.Bank.API.repository.TransactionRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,8 +14,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import javax.naming.directory.InvalidAttributeIdentifierException;
 
 @Service
 public class TransactionService {
@@ -83,7 +80,7 @@ public class TransactionService {
             throw new IllegalArgumentException("Invalid transaction: Your balance cannot become lower than the absolute limit(" + transaction.getFromAccount().getAbsoluteLimit() + ")+");
         }
         // check if the daily limit is already reached
-        if (dailyLimit > transaction.getFromAccount().getAbsoluteLimit()) {
+        if (dailyLimit > transaction.getUser().getDailyLimit()) {
             throw new IllegalArgumentException("Invalid transaction: You already reached your daily limit(" + dailyLimit + ")");
         }
         // check if the amount of the transaction is higher than the transaction limit
@@ -96,12 +93,12 @@ public class TransactionService {
 
     public Transaction performDeposit(TransactionRequestDTO dto) {
         Transaction deposit = mapTransactionRequestDTOToTransaction(dto);
-        deposit.setFromAccount(accountService.getAccountByIban(dto.fromIban()));
-        deposit.setToAccount(accountService.getAccountByIban(bankIban));
+        deposit.setFromAccount(accountService.getAccountByIban(bankIban));
+        deposit.setToAccount(accountService.getAccountByIban(dto.toIban()));
 
         if (deposit.getToAccount() != null){
             if (deposit.getToAccount().getAccountType() == AccountType.CURRENT){
-                deposit.setUser(deposit.getFromAccount().getAccountHolder());
+                deposit.setUser(deposit.getToAccount().getAccountHolder());
                 deposit.setTransactionType(TransactionType.DEPOSIT);
                 return transactionRepository.save(deposit);
             } else {
@@ -114,12 +111,12 @@ public class TransactionService {
 
     public Transaction performWithdrawal(TransactionRequestDTO dto) {
         Transaction withdrawal = mapTransactionRequestDTOToTransaction(dto);
-        withdrawal.setFromAccount(accountService.getAccountByIban(bankIban));
-        withdrawal.setToAccount(accountService.getAccountByIban(dto.toIban()));
+        withdrawal.setFromAccount(accountService.getAccountByIban(dto.fromIban()));
+        withdrawal.setToAccount(accountService.getAccountByIban(bankIban));
 
         if (withdrawal.getFromAccount() != null){
             if (withdrawal.getFromAccount().getAccountType() == AccountType.CURRENT){
-                withdrawal.setUser(withdrawal.getToAccount().getAccountHolder());
+                withdrawal.setUser(withdrawal.getFromAccount().getAccountHolder());
                 withdrawal.setTransactionType(TransactionType.WITHDRAWAL);
                 return transactionRepository.save(withdrawal);
             } else{
@@ -133,13 +130,6 @@ public class TransactionService {
     public List<Transaction> getUserTransactionsByDay(Long userId, LocalDate day) {
         LocalDateTime startTime = day.atStartOfDay();
         LocalDateTime endTime = LocalDateTime.of(day, LocalTime.MAX);
-
-//        // Get user transactions
-//
-//        // Filter them by given day
-//        transactionsByDay = transactionsByDay.stream()
-//                .filter(transaction -> transaction.getTimestamp().isAfter(startTime) && transaction.getTimestamp().isBefore(endTime))
-//                .collect(Collectors.toList());
 
         return transactionRepository.findTransactionsByUserIdAndTimestampBetween(userId, startTime, endTime);
     }

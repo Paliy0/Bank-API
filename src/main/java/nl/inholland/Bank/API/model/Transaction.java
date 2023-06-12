@@ -54,5 +54,4 @@ public class Transaction {
         sb.append('}');
         return sb.toString();
     }
-    
 }

@@ -15,8 +15,6 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends CrudRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
 
-//    List<Transaction> findTransactionsByUserId(Long userId);
-
     List<Transaction> findTransactionsByUserIdAndTimestampBetween(Long userId, LocalDateTime startDate, LocalDateTime endDate);
 
     default Page<Transaction> findTransactions(double minAmount, double maxAmount, User user, TransactionType transactionType,

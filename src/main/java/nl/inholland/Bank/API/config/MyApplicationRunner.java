@@ -59,7 +59,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         user1.setZipCode("2015 CL");
         user1.setCity("Haarlem");
         user1.setCountry("Netherlands");
-        user1.setDailyLimit(1000);
+        user1.setDailyLimit(1000000000);
         user1.setTransactionLimit(100);
         user1.setRole(Role.ROLE_CUSTOMER);
         userService.add(user1);
@@ -77,7 +77,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         user2.setZipCode("2015 CL");
         user2.setCity("Haarlem");
         user2.setCountry("Netherlands");
-        user2.setDailyLimit(200);
+        user2.setDailyLimit(200000);
         user2.setTransactionLimit(100);
         user2.setRole(Role.ROLE_CUSTOMER);
         userService.add(user2);
@@ -95,7 +95,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         user3.setZipCode("2015 CV");
         user3.setCity("Haarlem");
         user3.setCountry("Netherlands");
-        user3.setDailyLimit(1500);
+        user3.setDailyLimit(150000000);
         user3.setTransactionLimit(120);
         user3.setRole(Role.ROLE_USER);
         userService.add(user3);

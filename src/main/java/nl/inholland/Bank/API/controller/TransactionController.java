@@ -67,7 +67,9 @@ public class TransactionController {
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getTransactionById(@PathVariable long id){
         try{
-            return ResponseEntity.ok().body(transactionService.getTransactionById(id));
+            Transaction transaction = transactionService.getTransactionById(id).get();
+            TransactionResponseDTO respoonse = buildTransactionResponse(transaction);
+            return ResponseEntity.status(200).body(respoonse);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
@@ -78,7 +80,8 @@ public class TransactionController {
         try {
             if (dto != null){
                 Transaction deposit = transactionService.performDeposit(dto);
-                return ResponseEntity.status(HttpStatus.CREATED).body(deposit);
+                TransactionResponseDTO response = buildTransactionResponse(deposit);
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
             } else{
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Deposit data is missing or null.");
             }
@@ -92,21 +95,26 @@ public class TransactionController {
         try {
             if (dto != null){
                 Transaction withdrawal = transactionService.performWithdrawal(dto);
-                return ResponseEntity.status(HttpStatus.CREATED).body(withdrawal);
+                TransactionResponseDTO response = buildTransactionResponse(withdrawal);
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
             } else{
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Withdrawal data is missing or null.");
             }
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 
     @GetMapping(value = "/getDailyTotal/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Transaction>> getDailyTotal(@PathVariable Long userId){
+    public ResponseEntity<Object> getDailyTotal(@PathVariable Long userId){
         try{
             List<Transaction> userTransactionsToday = transactionService.getUserTransactionsByDay(userId, LocalDate.now());
             if(!userTransactionsToday.isEmpty()){
-                return ResponseEntity.ok().body(userTransactionsToday);
+                List<TransactionResponseDTO> responses = new ArrayList<>();
+                for (Transaction transaction : userTransactionsToday) {
+                    responses.add(buildTransactionResponse(transaction));
+                }
+                return ResponseEntity.status(200).body(responses);
             } else {
                 return ResponseEntity.noContent().build();
             }
