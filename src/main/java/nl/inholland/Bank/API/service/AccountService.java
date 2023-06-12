@@ -166,7 +166,6 @@ public class AccountService {
     }
 
     public void saveAccount(Account newAccount) {
-        User updatedUser = new User();
         if (newAccount.getIban() == null) {
             newAccount.setIban(generateIBAN());
         }
@@ -174,9 +173,8 @@ public class AccountService {
 
         if(user.getRole().toString() == "ROLE_USER"){
             user.setRole(Role.ROLE_CUSTOMER);
-            updatedUser = userService.add(user);
         }
-        newAccount.setAccountHolder(updatedUser);
+        newAccount.setAccountHolder(user);
         newAccount.setAbsoluteLimit(0);
         newAccount.setCreatedAt(LocalDate.now());
         accountRepository.save(newAccount);
