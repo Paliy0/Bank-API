@@ -1,26 +1,20 @@
 package nl.inholland.Bank.API.controller;
 
-import nl.inholland.Bank.API.model.Role;
 import nl.inholland.Bank.API.model.User;
 import nl.inholland.Bank.API.model.dto.UserDLimitDTO;
 import nl.inholland.Bank.API.model.dto.UserRequestDTO;
 import nl.inholland.Bank.API.model.dto.UserResponseDTO;
 import nl.inholland.Bank.API.model.dto.UserTLimitDTO;
-
+import nl.inholland.Bank.API.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-
-import nl.inholland.Bank.API.service.UserService;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 
 @RestController
@@ -39,6 +33,7 @@ public class UserController {
      * HTTP Method: Get
      * URL: /users
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Iterable<UserResponseDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") int skip,
@@ -60,11 +55,11 @@ public class UserController {
     /**
      * Post a user
      * HTTP Method: POST
-     * URL: /users
+     * URL: /users/register
      */
 
     @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity registerUser(@RequestBody UserRequestDTO userRequest) {
+    public ResponseEntity<Object> registerUser(@RequestBody UserRequestDTO userRequest) {
         try {
             String error = userService.registerChecking(userRequest);
             //check if new user detail is valid
@@ -94,7 +89,7 @@ public class UserController {
      * HTTP Method: PUT
      * URL: users/updateInformation/{id}
      */
-    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
     @PutMapping(value = "/updateInformation/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> changeUserData(@PathVariable long id, @RequestBody UserRequestDTO newUserData){
         try{
@@ -123,7 +118,6 @@ public class UserController {
      * HTTP Method: Get
      * URL: /users/{id}
      */
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getLoggedInUser(@PathVariable long id) {
@@ -150,7 +144,6 @@ public class UserController {
      * HTTP Method: GET
      * URL: /users/dailyLimit/{id}
      */
-    @PreAuthorize("hasRole('ROLE_EMPLOYEE') || hasRole('ROLE_CUSTOMER')")
     @GetMapping(value = "dailyLimit/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getDailyLimitById(@PathVariable long id) {
         try {
@@ -180,7 +173,6 @@ public class UserController {
      * HTTP Method: GET
      * URL: /users/transactionLimit/{id}
      */
-    @PreAuthorize("hasRole('ROLE_EMPLOYEE') || hasRole('ROLE_CUSTOMER')")
     @GetMapping(value = "transactionLimit/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getTransactionLimitById(@PathVariable long id) {
         try {
@@ -195,6 +187,7 @@ public class UserController {
      * HTTP Method: PUT
      * URL: /users/{userId}/transactionLimit
      */
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PutMapping(value = "/{userId}/transactionLimit", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserTLimitDTO> updateTransactionLimitById(@PathVariable Long userId, @RequestParam int transactionLimit) {
         try {

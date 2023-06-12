@@ -19,8 +19,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import ch.qos.logback.core.subst.Token;
-import nl.inholland.Bank.API.repository.UserRepository;
 import nl.inholland.Bank.API.util.JwtTokenProvider;
 
 import java.time.LocalDate;
@@ -37,7 +35,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AccountService accountService;
-    private final ModelMapper modelMapper;
     private final TransactionService transactionService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
@@ -46,7 +43,7 @@ public class UserService {
     public UserService(UserRepository userRepository, TransactionService transactionService, @Lazy AccountService accountService, BCryptPasswordEncoder bCryptPasswordEncoder, JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
         this.accountService = accountService;
-        this.modelMapper = new ModelMapper();
+        new ModelMapper();
         this.transactionService = transactionService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -68,6 +65,9 @@ public class UserService {
         }
         if(!checkUserBody(userRequest)){
             return  "Bad request. Invalid User Information.";
+        }
+        if(!isStrongPassword(userRequest.password())){
+            return "Bad request. Password is not strong enough";
         }
         return errorMessage;
     }
@@ -232,11 +232,13 @@ public class UserService {
                 account.setAccountStatus(AccountStatus.INACTIVE);
                 accountService.saveAccount(account);
             }
-            return ResponseEntity.ok("All the accounts were deactivated successfully. User with accounts cannot be deleted.");
+            return ResponseEntity.status(204).body("All the accounts were deactivated successfully. User with accounts cannot be deleted.");
+
         }
 
         userRepository.deleteById(userId);
-        return ResponseEntity.ok("User was deleted successfully.");
+        return ResponseEntity.status(204).body("User was deleted successfully.");
+
     }
     /**
      * Checking Methods
@@ -249,8 +251,7 @@ public class UserService {
                 userBody.houseNumber() > 0 &&
                 userBody.zipCode().length() > 3 &&
                 userBody.city().length() > 3 &&
-                userBody.country().length() > 3 &&
-                isStrongPassword(userBody.password()))
+                userBody.country().length() > 3)
         ) {
             return false;
         }

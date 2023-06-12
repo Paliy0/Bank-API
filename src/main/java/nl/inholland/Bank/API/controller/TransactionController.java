@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -49,6 +50,7 @@ public class TransactionController {
         return ResponseEntity.status(200).body(responses);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
     @PostMapping
     public ResponseEntity<Object> postTransaction(@RequestBody TransactionRequestDTO dto) {
         try {
@@ -63,7 +65,7 @@ public class TransactionController {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
-
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getTransactionById(@PathVariable long id){
         try{
@@ -75,6 +77,7 @@ public class TransactionController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
     @PostMapping(value = "/atm/deposit")
     public ResponseEntity<?> performDeposit(@RequestBody TransactionRequestDTO dto) {
         try {
@@ -90,6 +93,7 @@ public class TransactionController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
     @PostMapping(value = "/atm/withdrawal")
     public ResponseEntity<?> performWithdrawal(@RequestBody TransactionRequestDTO dto) {
         try {
@@ -105,6 +109,7 @@ public class TransactionController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
     @GetMapping(value = "/getDailyTotal/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getDailyTotal(@PathVariable Long userId){
         try{
