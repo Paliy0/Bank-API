@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class FindAccountResponseDTO {
     private String iban;
     private String user;
+    private String accountType;
 }

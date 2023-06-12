@@ -33,9 +33,9 @@ public class MyApplicationRunner implements ApplicationRunner {
         bankUser.setLastName("INHOLLAND");
         bankUser.setPassword("SecretPassword123!");
         bankUser.setEmail("bank@inholland.com");
-        bankUser.setBsn("914815121");
-        bankUser.setPhoneNumber("+31 914815121");
-        bankUser.setBirthdate("2000-01-01");
+        bankUser.setBsn("203514435");
+        bankUser.setPhoneNumber("+31697389599");
+        bankUser.setBirthdate("1980-01-01");
         bankUser.setStreetName("Bijdorplaan");
         bankUser.setHouseNumber(15);
         bankUser.setZipCode("2015 CE");
@@ -50,10 +50,10 @@ public class MyApplicationRunner implements ApplicationRunner {
         customer.setFirstName("Sasa");
         customer.setLastName("Crow");
         customer.setPassword("Test123!");
-        customer.setEmail("sasa@gmail.com");
-        customer.setBsn("123455789");
-        customer.setPhoneNumber("+31654557890");
-        customer.setBirthdate("1990-07-20");
+        customer.setEmail("customer@inholland.com");
+        customer.setBsn("350876412");
+        customer.setPhoneNumber("+31669519063");
+        customer.setBirthdate("1999-05-14");
         customer.setStreetName("Schoonzichtlaan");
         customer.setHouseNumber(218);
         customer.setZipCode("2015 CL");
@@ -65,20 +65,20 @@ public class MyApplicationRunner implements ApplicationRunner {
         userService.add(customer);
         
         User employee = new User();
-        employee.setFirstName("employee");
-        employee.setLastName("Crow");
+        employee.setFirstName("John");
+        employee.setLastName("Weak");
         employee.setPassword("Test123!");
-        employee.setEmail("employee@gmail.com");
-        employee.setBsn("123455789");
-        employee.setPhoneNumber("+31654557890");
+        employee.setEmail("employee@inholland.com");
+        employee.setBsn("456744494");
+        employee.setPhoneNumber("+31667628938");
         employee.setBirthdate("1990-07-20");
-        employee.setStreetName("Schoonzichtlaan");
-        employee.setHouseNumber(218);
-        employee.setZipCode("2015 CL");
-        employee.setCity("Haarlem");
+        employee.setStreetName("Nieuwe Hoogstraat");
+        employee.setHouseNumber(14);
+        employee.setZipCode("1011 HC");
+        employee.setCity("Amsterdam");
         employee.setCountry("Netherlands");
-        employee.setDailyLimit(1000);
-        employee.setTransactionLimit(100);
+        employee.setDailyLimit(10000);
+        employee.setTransactionLimit(1000);
         employee.setRole(Role.ROLE_EMPLOYEE);
         userService.add(employee);
 
@@ -86,13 +86,13 @@ public class MyApplicationRunner implements ApplicationRunner {
         user2.setFirstName("Jo");
         user2.setLastName("Becker");
         user2.setPassword("Test123!");
-        user2.setEmail("jo@student.nl");
-        user2.setBsn("015754702");
+        user2.setEmail("user@inholland.com");
+        user2.setBsn("882011107");
         user2.setPhoneNumber("+49015754702");
-        user2.setBirthdate("1990-07-20");
-        user2.setStreetName("Schoonzichtlaan");
-        user2.setHouseNumber(218);
-        user2.setZipCode("2015 CL");
+        user2.setBirthdate("2000-03-20");
+        user2.setStreetName("Bergerweg");
+        user2.setHouseNumber(111);
+        user2.setZipCode("2041 AV");
         user2.setCity("Haarlem");
         user2.setCountry("Netherlands");
         user2.setDailyLimit(200);
@@ -117,6 +117,16 @@ public class MyApplicationRunner implements ApplicationRunner {
         userSavingsAccount.setIban(accountService.generateIBAN());
         userSavingsAccount.setBalance(249.75);
         accountService.saveAccount(userSavingsAccount);
+
+        Account employeeCurrent = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, employee);
+        employeeCurrent.setIban(accountService.generateIBAN());
+        employeeCurrent.setBalance(2411.51);
+        accountService.saveAccount(employeeCurrent);
+
+        Account employeeSavings = new Account(AccountType.SAVINGS, AccountStatus.ACTIVE, employee);
+        employeeSavings.setIban(accountService.generateIBAN());
+        employeeSavings.setBalance(5000.00);
+        accountService.saveAccount(employeeSavings);
 
         Transaction transaction1 = new Transaction();
         transaction1.setTimestamp(LocalDateTime.now());
