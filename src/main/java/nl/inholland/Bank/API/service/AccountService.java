@@ -169,7 +169,6 @@ public class AccountService {
             newAccount.setIban(generateIBAN());
         }
 
-        newAccount.setBalance(0);
         newAccount.setAbsoluteLimit(0);
         newAccount.setCreatedAt(LocalDate.now());
         
