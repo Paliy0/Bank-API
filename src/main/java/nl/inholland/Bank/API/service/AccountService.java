@@ -171,14 +171,12 @@ public class AccountService {
         }
         User user = newAccount.getAccountHolder();
 
-        if(user.getRole().toString() == "ROLE_USER" && user.getRole().toString() != "ROLE_EMPLOYEE"){
+        if(user.getRole().toString() == "ROLE_USER"){
             user.setRole(Role.ROLE_CUSTOMER);
         }
-        User updatedUser = userService.add(user);
-        newAccount.setAccountHolder(updatedUser);
+        newAccount.setAccountHolder(user);
         newAccount.setAbsoluteLimit(0);
         newAccount.setCreatedAt(LocalDate.now());
-        
         accountRepository.save(newAccount);
     }
 
