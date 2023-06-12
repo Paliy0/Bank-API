@@ -45,7 +45,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoginResponse"
+                $ref: "#/components/schemas/TokenDTO"
         "400":
           description: Invalid status value.
 
@@ -405,13 +405,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ExceptionDTO"
         "404":
           description: Account not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ExceptionDTO"
   /users/updateInformation/{userId}:
     put:
       tags:
