@@ -168,9 +168,11 @@ public class AccountService {
         if (newAccount.getIban() == null) {
             newAccount.setIban(generateIBAN());
         }
+
         newAccount.setBalance(0);
         newAccount.setAbsoluteLimit(0);
         newAccount.setCreatedAt(LocalDate.now());
+        
         accountRepository.save(newAccount);
     }
 
