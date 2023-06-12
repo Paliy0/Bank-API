@@ -9,15 +9,15 @@
 ### Login Details:
 ```
 User with role User:
-- Username = user@inholland.nl
+- Username = user@inholland.com
 - Password = Test123!
 
 User with role Customer:
-- Username = customer@inholland.nl
+- Username = customer@inholland.com
 - Password = Test123!
 
 User with role Employee:
-- Username = employee@inholland.nl
+- Username = employee@inholland.com
 - Password = Test123!
 ```
 
