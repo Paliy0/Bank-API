@@ -150,7 +150,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         transaction1.setUser(customer);
         transaction1.setTimestamp(LocalDateTime.now());
         transaction1.setFromAccount(userCurrentAccount);
-        transaction1.setToAccount(user3SavingsAccount);
+        transaction1.setToAccount(employeeSavings);
         transaction1.setAmount(50.0);
         transaction1.setDescription("customer to user 5");
         transaction1.setTransactionType(TransactionType.TRANSACTION);
@@ -167,8 +167,8 @@ public class MyApplicationRunner implements ApplicationRunner {
         Transaction transaction3 = new Transaction();
         transaction3.setUser(employee);
         transaction3.setTimestamp(LocalDateTime.now());
-        transaction3.setFromAccount(user3SavingsAccount);
-        transaction3.setToAccount(user3SavingsAccount);
+        transaction3.setFromAccount(employeeSavings);
+        transaction3.setToAccount(employeeSavings);
         transaction3.setAmount(37.0);
         transaction3.setDescription("user 5 savings to user 5 current");
         transaction3.setTransactionType(TransactionType.TRANSACTION);
@@ -176,7 +176,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         Transaction transaction4 = new Transaction();
         transaction4.setUser(employee);
         transaction4.setTimestamp(LocalDateTime.of(2023, 06, 01, 14, 40));
-        transaction4.setFromAccount(user3SavingsAccount);
+        transaction4.setFromAccount(employeeSavings);
         transaction4.setToAccount(userCurrentAccount);
         transaction4.setAmount(20.0);
         transaction4.setDescription("different day transaction user 5 to customer");
