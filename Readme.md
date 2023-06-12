@@ -20,3 +20,7 @@ User with role Employee:
 - Username = employee@inholland.nl
 - Password = Test123!
 ```
+
+
+### Testing 
+Our group did not have enough time to implement the testing part, so we decided to finish everything else, and do the testing for the retake.
