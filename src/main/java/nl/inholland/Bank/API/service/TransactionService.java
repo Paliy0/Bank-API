@@ -53,15 +53,20 @@ public class TransactionService {
         Transaction transaction = mapTransactionRequestDTOToTransaction(dto);
         transaction.setFromAccount(accountService.getAccountByIban(dto.fromIban()));
         transaction.setToAccount(accountService.getAccountByIban(dto.toIban()));
-        int dailyLimit = 0;
-        int transactionLimit = 0;
+        int dailyLimit;
+        int transactionLimit;
 
         // check that the accounts exist
-        if (transaction.getFromAccount() != null || transaction.getToAccount() != null){
+        if (transaction.getFromAccount() != null && transaction.getToAccount() != null){
             transaction.setUser(transaction.getFromAccount().getAccountHolder());
             transaction.setTransactionType(TransactionType.TRANSACTION);
             dailyLimit = transaction.getUser().getDailyLimit();
             transactionLimit = transaction.getUser().getTransactionLimit();
+            transaction.getFromAccount().setBalance(transaction.getFromAccount().getBalance() - transaction.getAmount());
+            transaction.getToAccount().setBalance(transaction.getToAccount().getBalance() + transaction.getAmount());
+            accountService.saveAccount(transaction.getFromAccount());
+            accountService.saveAccount(transaction.getToAccount());
+
         } else{
             throw new IllegalArgumentException("Invalid transaction: One or both of the accounts do not exist");
         }
@@ -99,7 +104,8 @@ public class TransactionService {
         if (deposit.getToAccount() != null){
             if (deposit.getToAccount().getAccountType() == AccountType.CURRENT){
                 deposit.setUser(deposit.getToAccount().getAccountHolder());
-                deposit.setTransactionType(TransactionType.DEPOSIT);
+                deposit.getToAccount().setBalance(deposit.getToAccount().getBalance() + deposit.getAmount());
+                accountService.saveAccount(deposit.getToAccount());
                 return transactionRepository.save(deposit);
             } else {
                 throw new IllegalArgumentException("Invalid deposit: You cannot deposit money to a savings account");
@@ -118,7 +124,14 @@ public class TransactionService {
             if (withdrawal.getFromAccount().getAccountType() == AccountType.CURRENT){
                 withdrawal.setUser(withdrawal.getFromAccount().getAccountHolder());
                 withdrawal.setTransactionType(TransactionType.WITHDRAWAL);
-                return transactionRepository.save(withdrawal);
+                if (withdrawal.getAmount() < withdrawal.getFromAccount().getBalance()){
+                    withdrawal.getFromAccount().setBalance(withdrawal.getFromAccount().getBalance() - withdrawal.getAmount());
+                    accountService.saveAccount(withdrawal.getFromAccount());
+                    return transactionRepository.save(withdrawal);
+                } else{
+                    throw new IllegalArgumentException("Invalid withdrawal: There is not enough money in your account");
+
+                }
             } else{
                 throw new IllegalArgumentException("Invalid withdrawal: You cannot withdraw money from a savings account");
             }
