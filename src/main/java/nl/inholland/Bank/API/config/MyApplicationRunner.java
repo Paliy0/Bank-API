@@ -165,7 +165,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         transaction2.setTransactionType(TransactionType.TRANSACTION);
 
         Transaction transaction3 = new Transaction();
-        transaction3.setUser(user3);
+        transaction3.setUser(employee);
         transaction3.setTimestamp(LocalDateTime.now());
         transaction3.setFromAccount(user3SavingsAccount);
         transaction3.setToAccount(user3SavingsAccount);
@@ -174,7 +174,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         transaction3.setTransactionType(TransactionType.TRANSACTION);
 
         Transaction transaction4 = new Transaction();
-        transaction4.setUser(user3);
+        transaction4.setUser(employee);
         transaction4.setTimestamp(LocalDateTime.of(2023, 06, 01, 14, 40));
         transaction4.setFromAccount(user3SavingsAccount);
         transaction4.setToAccount(userCurrentAccount);
