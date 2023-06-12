@@ -51,7 +51,7 @@ public class TransactionController {
     }
 
     @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
-    @PostMapping
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> postTransaction(@RequestBody TransactionRequestDTO dto) {
         try {
             if (dto != null){
@@ -78,7 +78,7 @@ public class TransactionController {
     }
 
     @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
-    @PostMapping(value = "/atm/deposit")
+    @PostMapping(value = "/atm/deposit", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> performDeposit(@RequestBody TransactionRequestDTO dto) {
         try {
             if (dto != null){
@@ -94,7 +94,7 @@ public class TransactionController {
     }
 
     @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
-    @PostMapping(value = "/atm/withdrawal")
+    @PostMapping(value = "/atm/withdrawal", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> performWithdrawal(@RequestBody TransactionRequestDTO dto) {
         try {
             if (dto != null){

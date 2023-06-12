@@ -3,6 +3,7 @@ package nl.inholland.Bank.API.service;
 import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.AccountStatus;
 import nl.inholland.Bank.API.model.AccountType;
+import nl.inholland.Bank.API.model.Role;
 import nl.inholland.Bank.API.model.User;
 import nl.inholland.Bank.API.model.dto.*;
 import nl.inholland.Bank.API.repository.AccountRepository;
@@ -168,10 +169,14 @@ public class AccountService {
         if (newAccount.getIban() == null) {
             newAccount.setIban(generateIBAN());
         }
+        User user = newAccount.getAccountHolder();
 
+        if(user.getRole().toString() == "ROLE_USER"){
+            user.setRole(Role.ROLE_CUSTOMER);
+        }
+        newAccount.setAccountHolder(user);
         newAccount.setAbsoluteLimit(0);
         newAccount.setCreatedAt(LocalDate.now());
-        
         accountRepository.save(newAccount);
     }
 
