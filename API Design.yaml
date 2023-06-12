@@ -1,0 +1,1339 @@
+openapi: 3.0.0
+info:
+  title: Bank API
+  description: This is a Bank API that will be later used in a project
+  contact:
+    email: 646415@student.inholland.nl
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/646415/Accounts/1.0.0
+security:
+  - bearerAuth: []
+tags:
+  - name: Account
+    description: Operations for Accounts
+  - name: User
+    description: Operations for Users
+  - name: Transaction
+    description: Operations for Transactions
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Gets a JWT token
+      description: Gets a JWT token
+      operationId: login
+      requestBody:
+        description: Auth details
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            examples:
+              Login343:
+                $ref: "#/components/examples/Login343"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Invalid status value.
+
+  /accounts:
+    get:
+      tags:
+        - Account
+      summary: Get a list of all accounts
+      description: Returns a list of all accounts
+      operationId: getAllAccounts
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+          description: The number of items to skip before starting to return items
+          required: false
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            maximum: 50
+            default: 10
+          description: The maximum numbers of items to return (50 max)
+          required: false
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [CURRENT, SAVING]
+          example: CURRENT
+      responses:
+        "200":
+          description: List of accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AccountResponseDTO"
+        "400":
+          description: Bad request.
+        "401":
+          description: No authorization.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Unexpected error.
+    post:
+      tags:
+        - Account
+      summary: Create a new account as employee
+      description: This can only be done by logged in employee
+      operationId: createAccount
+      requestBody:
+        description: Created Account Object
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountRequestDTO"
+            examples:
+              Account3:
+                $ref: "#/components/examples/Account3"
+        required: true
+      responses:
+        "201":
+          description: Account created successfully
+        "400":
+          description: Bad request
+        "401":
+          description: No authorization.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Unexpected error.
+      security: []
+  /accounts/{iban}:
+    get:
+      tags:
+        - Account
+      summary: "Get an account by its IBAN"
+      description: "Returns the account with the given IBAN"
+      operationId: getAccountByIban
+      parameters:
+        - name: iban
+          in: path
+          description: IBAN of account to return
+          required: true
+          schema:
+            maxLength: 18
+            minLength: 18
+            type: "string"
+            example: "NL22INGB1234567890"
+      responses:
+        "200":
+          description: "Result of selected account"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountResponseDTO"
+              examples:
+                Account1:
+                  $ref: "#/components/examples/Account1"
+        "400":
+          description: Bad request.
+        "401":
+          description: No authorization.
+        "403":
+          description: Forbidden.
+        "404":
+          description: Account not found.
+        "500":
+          description: Unexpected error.
+  /accounts/MyAccounts/{userId}:
+    get:
+      tags:
+        - Account
+      summary: "Get accounts for logged in user"
+      description: "Returns the accounts with the given user ID"
+      operationId: getMyAccounts
+      parameters:
+        - name: userId
+          in: path
+          description: User ID of account holder
+          required: true
+          schema:
+            type: "string"
+            example: "Joe"
+      responses:
+        "200":
+          description: "Result of selected accounts"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyAccountResponseDTO"
+              examples:
+                Account1:
+                  $ref: "#/components/examples/Account1"
+        "400":
+          description: Bad request.
+        "401":
+          description: No authorization.
+        "403":
+          description: Forbidden.
+        "404":
+          description: Account not found.
+        "500":
+          description: Unexpected error.
+  /accounts/findIbanByCustomerName:
+    get:
+      tags:
+        - Account
+      summary: "Get an IBAN based on account name"
+      description: "Returns the IBAN of given account name"
+      operationId: getIbanByName
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+          description: The number of items to skip before starting to return items
+          required: false
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            maximum: 50
+            default: 50
+          description: The maximum numbers of items to return (50 max)
+          required: false
+        - name: name
+          in: query
+          description: Name of customer
+          required: true
+          schema:
+            type: "string"
+            example: "Joe"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindAccountResponseDTO"
+              examples:
+                Account4:
+                  $ref: "#/components/examples/Account4"
+        "400":
+          description: Bad request.
+        "401":
+          description: No authorization.
+        "403":
+          description: Forbidden.
+        "404":
+          description: Account not found.
+        "500":
+          description: Unexpected error.
+  /accounts/{iban}/status:
+    put:
+      tags:
+        - Account
+      summary: "Add/close account as employee"
+      description: "Update the status of the account with the given IBAN as an employee"
+      parameters:
+        - name: "iban"
+          in: "path"
+          description: "IBAN of account to update"
+          required: true
+          schema:
+            maxLength: 18
+            minLength: 18
+            type: "string"
+            format: "NL02ABNA0123456789"
+        - name: "status"
+          in: "query"
+          description: "New status of the account (OPEN or CLOSED)"
+          required: true
+          schema:
+            type: "string"
+            enum:
+              - "OPEN"
+              - "CLOSED"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountResponseDTO"
+              examples:
+                Account1:
+                  $ref: "#/components/examples/Account1"
+        "400":
+          description: Bad request.
+        "403":
+          description: Forbidden.
+        "401":
+          description: No authorization.
+        "404":
+          description: Account not found.
+        "500":
+          description: Unexpected error.
+
+  /accounts/{iban}/absoluteLimit:
+    put:
+      tags:
+        - Account
+      summary: "Change absolute limit for account as employee"
+      description: "Update the absolute limit of the account with the given IBAN as an employee"
+      parameters:
+        - name: "iban"
+          in: "path"
+          description: "IBAN of account to update"
+          required: true
+          schema:
+            maxLength: 18
+            minLength: 18
+            type: "string"
+            format: "NL02ABNA0123456789"
+        - name: "absolute limit"
+          in: "query"
+          description: "New account absolute limit"
+          required: true
+          schema:
+            type: "number"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountResponseDTO"
+              examples:
+                Account1:
+                  $ref: "#/components/examples/Account1"
+        "400":
+          description: Bad request.
+        "403":
+          description: Forbidden.
+        "401":
+          description: No authorization.
+        "404":
+          description: Account not found.
+        "500":
+          description: Unexpected error.
+
+  /users:
+    get:
+      tags:
+        - User
+      summary: Get a list of all users
+      description: Returns a list of all users wich do not have an account
+      operationId: getAllUsers
+      parameters:
+        - in: query
+          name: skip
+          description: number of records to skip for pagination
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - in: query
+          name: limit
+          description: maximum number of records to return
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 50
+        - in: query
+          name: hasAccount
+          description: specify if the users you want to retrieve have an account or no
+          schema:
+            type: boolean
+
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserResponseDTO"
+              examples:
+                UserWithAccount:
+                  $ref: "#/components/examples/UserWithAccount"
+                UserWithoutAccount:
+                  $ref: "#/components/examples/UserWithoutAccount"
+        "400":
+          description: Invalid status value.
+    post:
+      tags:
+        - User
+      summary: register a user
+      description: register a new User
+      operationId: registerUser
+
+      requestBody:
+        description: Data for User object to register
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRequestDTO"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserRequestDTO"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /users/updateInformation/{userId}:
+    put:
+      tags:
+        - User
+      summary: "update information of a user"
+      description: "employees can update every users information and users can update their own personal information"
+      operationId: updateUserById
+
+      parameters:
+        - name: "userId"
+          in: "path"
+          description: "Id of user to update"
+          required: true
+          schema:
+            maxLength: 18
+            minLength: 18
+            type: "number"
+      requestBody:
+        description: Info for Updated User object
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRequestDTO"
+        required: true
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request.
+        "401":
+          description: No authorization.
+        "404":
+          description: Account not found.
+        "500":
+          description: Unexpected error.
+
+  /users/{userId}:
+    get:
+      tags:
+        - User
+      summary: Get logged in User
+      description: Returns the User with the given ID
+      operationId: getUserbyID
+      parameters:
+        - name: userId
+          in: path
+          description: id of user to return
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: integer
+            example: 12
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponseDTO"
+        "400":
+          description: Invalid status value
+        "404":
+          description: Account not found
+    delete:
+      tags:
+        - User
+      summary: delete User
+      description: deletes the User with the given id
+      operationId: deleteUserById
+      parameters:
+        - name: userId
+          in: path
+          description: id of user to delete
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: integer
+            example: 12
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid status value
+        "404":
+          description: Account not found
+  /users/{userId}/dailyLimit:
+    get:
+      tags:
+        - User
+      summary: Get daily limit for User
+      description: Returns the daily limit of a User with the given ID
+      operationId: getUserDailyLimit
+      parameters:
+        - name: userId
+          in: path
+          description: id of user to return
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: integer
+            example: 12
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDLimitDTO"
+        "400":
+          description: Invalid status value
+        "404":
+          description: Account not found
+    put:
+      tags:
+        - User
+      summary: "Configure daily limit for an user as employee"
+      description: "Update the daily limit for the user with the given id as an employee"
+      parameters:
+        - name: "userId"
+          in: "path"
+          description: "Id of user to update daily limit"
+          required: true
+          schema:
+            maxLength: 18
+            minLength: 18
+            type: "number"
+        - name: "dailyLimit"
+          in: "query"
+          description: "New daily limit for the user"
+          required: true
+          schema:
+            type: "number"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request.
+        "401":
+          description: No authorization.
+        "404":
+          description: Account not found.
+        "500":
+          description: Unexpected error.
+
+  /users/{userId}/transactionLimit:
+    get:
+      tags:
+        - User
+      summary: Get transaction limit for User
+      description: Returns the transaction limit of a User with the given ID
+      operationId: getUserTransactionLimit
+      parameters:
+        - name: userId
+          in: path
+          description: id of user to return
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserTLimitDTO"
+        "400":
+          description: Invalid status value
+        "404":
+          description: Account not found
+    put:
+      tags:
+        - User
+      summary: "Configure transfer limit for an user as employee"
+      description: "Update the transfer limit for the user with the given id as an employee"
+      parameters:
+        - name: "userId"
+          in: "path"
+          description: "Id of user to update transfer limit"
+          required: true
+          schema:
+            maxLength: 18
+            minLength: 18
+            type: "number"
+        - name: "transferLimit"
+          in: "query"
+          description: "New transfer limit for the user"
+          required: true
+          schema:
+            type: "number"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request.
+        "401":
+          description: No authorization.
+        "404":
+          description: Account not found.
+        "500":
+          description: Unexpected error.
+
+  /transactions:
+    get:
+      tags:
+        - Transaction
+      summary: Get all transactions
+      description: Returns a list of all the transactions
+      parameters:
+        - name: timestamp
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2023-06-25T09:15:04Z"
+        - name: fromAccountIban
+          in: query
+          required: false
+          schema:
+            type: string
+            example: NL02ABNA0123456780
+        - name: toAccountIban
+          in: query
+          required: false
+          schema:
+            type: string
+            example: NL02ABNA0123456780
+        - name: balanceStart
+          in: query
+          required: false
+          schema:
+            type: number
+            example: 30
+        - name: balanceEnd
+          in: query
+          required: false
+          schema:
+            type: number
+            example: 60
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionResponse"
+        "400":
+          description: Bad request.
+        "401":
+          description: No authorization.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Unexpected error.
+    post:
+      tags:
+        - Transaction
+      summary: Perform a new transaction
+      description: Perform a new transaction between two accounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionRequest"
+      responses:
+        "201":
+          description: Transaction created successfully
+        "400":
+          description: Bad request
+        "401":
+          description: No authorization.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Unexpected error.
+  /transactions/{transactionId}:
+    get:
+      tags:
+        - Transaction
+      summary: Get a transaction by ID
+      description: Returns the transaction with the given ID
+      parameters:
+        - name: transactionId
+          in: path
+          description: ID of transaction to return
+          required: true
+          schema:
+            type: integer
+            example: 6
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionResponse"
+        "400":
+          description: Bad request.
+        "401":
+          description: No authorization.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Unexpected error.
+
+  /transactions/atm/deposit:
+    post:
+      tags:
+        - Transaction
+      summary: Perform a deposit at an ATM
+      description: Perform a deposit at an ATM
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionRequest"
+      responses:
+        "201":
+          description: Deposit transaction created successfully
+        "400":
+          description: Bad request
+        "401":
+          description: No authorization.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Unexpected error.
+  /transactions/atm/withdrawal:
+    post:
+      tags:
+        - Transaction
+      summary: Perform a withdrawal at an ATM
+      description: Perform a withdrawal at an ATM
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionRequest"
+      responses:
+        "201":
+          description: Withdrawal transaction created successfully
+        "400":
+          description: Bad request
+        "401":
+          description: No authorization.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Unexpected error.
+
+  /transactions/getDailyTotal/{userId}:
+    get:
+      tags:
+        - Transaction
+      summary: Get a transaction for a user for today to calculate the limit
+      description: Returns the transaction with for the given user on the given date
+      parameters:
+        - name: userId
+          in: path
+          description: ID of user to return transactions from
+          required: true
+          schema:
+            type: integer
+            example: 6
+        - name: date
+          in: query
+          description: date to return the transactions from
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "01/10/2000"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionResponse"
+        "400":
+          description: Bad request.
+        "401":
+          description: No authorization.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Unexpected error.
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the account
+          format: int64
+          example: 12
+        firstName:
+          type: string
+          description: User first Name
+          example: First
+        lastName:
+          type: string
+          description: User last Name
+          example: Last
+        email:
+          type: string
+          description: User email for login
+          example: user@test.com
+        password:
+          type: string
+          description: User password
+          example: secret123
+        phoneNumber:
+          type: string
+          description: User phonenumber
+          example: +311575389403
+        bsn:
+          type: string
+          description: User bsn number
+          example: 123456789
+        birthDate:
+          type: string
+          description: Date of Birth
+          format: date
+          example: "01-10-2000"
+        streetName:
+          type: string
+          example: Schoonzichtlaan
+        houseNumber:
+          type: integer
+          example: 1234
+        zipCode:
+          type: string
+          example: "2015 CV"
+        city:
+          type: string
+          example: Haarlem
+        country:
+          type: string
+          example: Netherlands
+        dailyLimit:
+          type: number
+          description: The Limit that can be spend in one day
+          example: 100
+        transactionLimit:
+          type: number
+          description: The Limit that can be spend in one transaction
+          example: 100
+        role:
+          type: string
+          description: User can be a Customer or Employee(are also Customers)
+          enum:
+            - USER
+            - CUSTOMER
+            - EMPLOYEE
+
+    UserResponseDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the account
+          format: int64
+          example: 12
+        firstName:
+          type: string
+          description: User first Name
+          example: First
+        lastName:
+          type: string
+          description: User last Name
+          example: Last
+        email:
+          type: string
+          description: User email for login
+          example: user@test.com
+        phoneNumber:
+          type: string
+          description: User phonenumber
+          example: +311575389403
+        bsn:
+          type: string
+          description: User bsn number
+          example: 123456789
+        birthDate:
+          type: string
+          description: Date of Birth
+          format: date
+          example: "01-10-2000"
+        streetName:
+          type: string
+          example: Schoonzichtlaan
+        houseNumber:
+          type: integer
+          example: 1234
+        zipCode:
+          type: string
+          example: "2015 CV"
+        city:
+          type: string
+          example: Haarlem
+        country:
+          type: string
+          example: Netherlands
+        dailyLimit:
+          type: number
+          description: The Limit that can be spend in one day
+          example: 100
+        transactionLimit:
+          type: number
+          description: The Limit that can be spend in one transaction
+          example: 100
+        role:
+          type: string
+          description: User can be a Customer or Employee(are also Customers)
+          enum:
+            - USER
+            - CUSTOMER
+            - EMPLOYEE
+
+    UserRequestDTO:
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: User first Name
+          example: First
+        lastName:
+          type: string
+          description: User last Name
+          example: Last
+        email:
+          type: string
+          description: User email for login
+          example: user@test.com
+        password:
+          type: string
+          description: User password
+          example: secret123
+        phoneNumber:
+          type: string
+          description: User phonenumber
+          example: +311575389403
+        bsn:
+          type: string
+          description: User bsn number
+          example: 123456789
+        birthDate:
+          type: string
+          description: Date of Birth
+          format: date
+          example: "01-10-2000"
+        streetName:
+          type: string
+          example: Schoonzichtlaan
+        houseNumber:
+          type: integer
+          example: 1234
+        zipCode:
+          type: string
+          example: "2015 CV"
+        city:
+          type: string
+          example: Haarlem
+        country:
+          type: string
+          example: Netherlands
+
+    UserDLimitDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the account
+          format: int64
+          example: 12
+        dailyLimit:
+          type: number
+          description: The Limit that can be spend in one day
+          example: 100
+
+    UserTLimitDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the account
+          format: int64
+          example: 12
+        transactionLimit:
+          type: number
+          description: The Limit that can be spend in one transaction
+          example: 100
+
+    AccountResponseDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the account
+          format: int64
+          example: 12
+        iban:
+          type: string
+          description: Account IBAN
+          example: NL02ABNA0123456780
+        balance:
+          type: number
+          description: Account balance
+          example: 500
+        absoluteLimit:
+          type: number
+          description: Account absolute limit
+          example: 0
+        createdAt:
+          type: string
+          description: Timestamp of account creation
+        accountType:
+          type: string
+          description: Account can be of type Current or Savings
+          enum:
+            - CURRENT
+            - SAVINGS
+        status:
+          type: string
+          description: Account can be opened or closed by employee
+          enum:
+            - OPEN
+            - CLOSED
+        user:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserResponseDTO"
+
+    MyAccountResponseDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the account
+          format: int64
+          example: 12
+        iban:
+          type: string
+          description: Account IBAN
+          example: NL02ABNA0123456780
+        balance:
+          type: number
+          description: Account balance
+          example: 500
+        absoluteLimit:
+          type: number
+          description: Account absolute limit
+          example: 0
+        createdAt:
+          type: string
+          description: Timestamp of account creation
+        accountType:
+          type: string
+          description: Account can be of type Current or Savings
+          enum:
+            - CURRENT
+            - SAVINGS
+        status:
+          type: string
+          description: Account can be opened or closed by employee
+          enum:
+            - OPEN
+            - CLOSED
+        totalBalance:
+          type: number
+          description: Total balance of all accounts
+          example: 5000
+
+    FindAccountResponseDTO:
+      type: object
+      properties:
+        iban:
+          type: string
+          description: Account IBAN
+          example: NL02ABNA0123456780
+        name:
+          type: string
+          description: Name of customer
+          example: Sasa
+        accountType:
+          type: string
+          description: Type of account
+          example: CURRENT
+
+    AccountRequestDTO:
+      type: object
+      properties:
+        accountType:
+          type: string
+          description: Account can be of type Current or Savings
+          enum:
+            - CURRENT
+            - SAVINGS
+        accountStatus:
+          type: string
+          description: Account can be opened or closed by employee
+          enum:
+            - ACTIVE
+            - INACTIVE
+        accountHolder:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserResponseDTO"
+
+    TransactionResponse:
+      type: object
+      properties:
+        transactionId:
+          type: integer
+          format: int64
+          example: 6
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-06-25T09:15:04Z"
+        fromAccountIban:
+          type: string
+          example: NL02ABNA0123456780
+        toAccountIban:
+          type: string
+          example: NL02ABNA0123456789
+        amount:
+          type: number
+          example: 50
+        description:
+          type: string
+          example: ATM Transaction
+        userId:
+          type: integer
+          format: int64
+          example: 12
+    TransactionRequest:
+      type: object
+      properties:
+        fromAccountIban:
+          type: string
+          example: NL02ABNA0123456780
+        toAccountIban:
+          type: string
+          example: NL02ABNA0123456789
+        amount:
+          type: number
+          example: 50
+        description:
+          type: string
+          example: ATM Transaction
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email of the user
+          example: someone@gmail.com
+        password:
+          type: string
+          description: Password of the user
+          example: somepassword123
+    TokenDTO:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Auth token
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        userId:
+          type: integer
+          description: Id of the user
+          example: 1
+    ExceptionDTO:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        name:
+          type: string
+        message:
+          type: string
+  examples:
+    Login343:
+      value:
+        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJyZWZyZXNoIjp0cnVlfQ.rAFTvBdjOsiHep9peKniaRRZuxU9iAUatILn9SO7V7o
+        id: 2
+    UserWithAccount:
+      value:
+        id: 12
+        firstName: John
+        lastName: Doe
+        email: john@doe.com
+        password: Secret123!
+        phoneNumber: "+3123456789"
+        bsn: "12345678"
+        birthdate: 01-10-2000
+        streetName: Schoonzichtlaan
+        housenumber: 8
+        zipCode: 2015CV
+        city: Haarlem
+        country: Netherlands
+        role: Customer
+        dailyLimit: 100
+        transactionLimit: 100
+
+    UserWithoutAccount:
+      value:
+        id: 12
+        firstName: John
+        lastName: Doe
+        email: john@doe.com
+        password: Secret123!
+        phoneNumber: "+3123456789"
+        bsn: "12345678"
+        birthdate: 01-10-2000
+        streetName: Schoonzichtlaan
+        housenumber: 8
+        zipCode: 2015CV
+        city: Haarlem
+        country: Netherlands
+        role: User
+        dailyLimit: 100
+        transactionLimit: 100
+    Account1:
+      value:
+        id: 1
+        iban: NL02ABNA0123456789
+        balance: 0
+        accountType: Current
+        status: Open
+        absoluteLimit: 0
+        user:
+          id: 12
+          firstName: John
+          lastName: Doe
+          email: john@doe.com
+          password: Secret123!
+          phoneNumber: "+3123456789"
+          bsn: "12345678"
+          birthdate: 01-10-2000
+          streetName: Schoonzichtlaan
+          housenumber: 8
+          zipCode: 2015CV
+          city: Haarlem
+          country: Netherlands
+          role: User
+          dailyLimit: 100
+          transactionLimit: 100
+    Account2:
+      value:
+        id: 2
+        iban: NL02ABNA2223456789
+        balance: 0
+        accountType: Savings
+        status: Open
+        absoluteLimit: 0
+        user: test
+    Account3:
+      value:
+        iban: NL02ABNA2553456789
+        balance: 0
+        accountType: Savings
+        status: Open
+        absoluteLimit: 0
+        user:
+          id: 12
+          firstName: John
+          lastName: Doe
+          email: john@doe.com
+          password: Secret123!
+          phoneNumber: "+3123456789"
+          bsn: "12345678"
+          birthdate: 01-10-2000
+          streetName: Schoonzichtlaan
+          housenumber: 8
+          zipCode: 2015CV
+          city: Haarlem
+          country: Netherlands
+          role: User
+          dailyLimit: 100
+          transactionLimit: 100
+    Account4:
+      value:
+        iban: NL02ABNA2553456733
+        name: Sasa
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
