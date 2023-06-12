@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -102,6 +103,7 @@ public class AccountService {
 
     public ResponseEntity<String> createAccount(AccountRequestDTO accountRequest) {
         Long userId = accountRequest.getAccountHolder().getId();
+        User user = userService.getUserById(userId).get();
         boolean hasAccount = this.hasAccount(userId);
         AccountType accountType = accountRequest.getAccountType();
 
@@ -140,10 +142,10 @@ public class AccountService {
         }
 
         Account account = modelMapper.map(accountRequest, Account.class);
+        account.setAccountHolder(user);
         this.saveAccount(account);
-        Account createdAccount = this.getAccountByIban(account.getIban());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully: " + this.mapDto(createdAccount).toString());
+        return ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully: " + this.mapDto(account).toString());
     }
 
     public AccountResponseDTO updateAccountStatus(String iban, AccountStatus accountStatus) {
@@ -166,6 +168,9 @@ public class AccountService {
         if (newAccount.getIban() == null) {
             newAccount.setIban(generateIBAN());
         }
+        newAccount.setBalance(0);
+        newAccount.setAbsoluteLimit(0);
+        newAccount.setCreatedAt(LocalDate.now());
         accountRepository.save(newAccount);
     }
 
