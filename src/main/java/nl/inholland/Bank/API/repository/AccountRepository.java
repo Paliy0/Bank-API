@@ -25,8 +25,6 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
 
     boolean existsAccountByAccountHolder_IdAndAccountTypeEquals(Long accountHolder_id, AccountType accountType);
 
-    long countAccountByAccountHolder_Id(@Param("id") Long id);
-
     Iterable<Account> findAccountsByAccountHolder(User user);
 
     Iterable<Account> findAccountsByAccountHolder_Id(Long id);
