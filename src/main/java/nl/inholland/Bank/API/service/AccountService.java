@@ -175,8 +175,6 @@ public class AccountService {
             user.setRole(Role.ROLE_CUSTOMER);
         }
         newAccount.setAccountHolder(user);
-        newAccount.setAbsoluteLimit(0);
-        newAccount.setCreatedAt(LocalDate.now());
         accountRepository.save(newAccount);
     }
 
