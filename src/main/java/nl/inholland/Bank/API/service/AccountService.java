@@ -7,10 +7,16 @@ import nl.inholland.Bank.API.repository.AccountRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 
 @Service
 public class AccountService {
@@ -29,17 +35,13 @@ public class AccountService {
     }
 
     public List<AccountResponseDTO> getAllAccounts(int limit, int offset) {
-        Iterable<Account> accountList = accountRepository.findAllByIbanNot(appProperties.getDefaultIban());
-        int count = 0;
+        Pageable pageable = PageRequest.of(offset / limit, limit);
+        Page<Account> accountPage = accountRepository.findAllByIbanNot(pageable, appProperties.getDefaultIban());
+
         List<AccountResponseDTO> result = new ArrayList<>();
-
-        for (Account account : accountList) {
+        for (Account account : accountPage.getContent()) {
             AccountResponseDTO responseDTO = this.mapDto(account);
-
-            if (count >= offset && count < offset + limit) {
-                result.add(responseDTO);
-            }
-            count++;
+            result.add(responseDTO);
         }
         return result;
     }

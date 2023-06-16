@@ -3,7 +3,8 @@ package nl.inholland.Bank.API.repository;
 import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.AccountType;
 import nl.inholland.Bank.API.model.User;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AccountRepository extends CrudRepository<Account, Long> {
 
-    Iterable<Account> findAllByIbanNot(@Param("iban") String iban);
+    Page<Account> findAllByIbanNot(Pageable pageable, String iban);
 
     Account findAccountByIban(@Param("iban") String iban);
 
