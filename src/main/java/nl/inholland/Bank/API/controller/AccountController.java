@@ -9,7 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/accounts", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -50,10 +52,17 @@ public class AccountController {
      */
     @PreAuthorize("hasAnyRole('ROLE_EMPLOYEE', 'ROLE_CUSTOMER')")
     @GetMapping(value = "/myAccounts/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Iterable<MyAccountResponseDTO>> getMyAccounts(@PathVariable Long userId) {
+    public ResponseEntity<Map<String, Object>> getMyAccounts(@PathVariable Long userId) {
         try {
-            if (!accountService.findAccountsByLoggedInUser(userId).isEmpty()) {
-                return ResponseEntity.ok().body(accountService.findAccountsByLoggedInUser(userId));
+            List<MyAccountResponseDTO> accountResponseDTOS = accountService.findAccountsByLoggedInUser(userId);
+            double totalBalance = accountService.getTotalBalance(userId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("accounts", accountResponseDTOS);
+            response.put("totalBalance", totalBalance);
+
+            if (!accountResponseDTOS.isEmpty()) {
+                return ResponseEntity.ok().body(response);
             } else {
                 return ResponseEntity.notFound().build();
             }

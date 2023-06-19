@@ -13,10 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class AccountService {
@@ -36,7 +33,7 @@ public class AccountService {
 
     public List<AccountResponseDTO> getAllAccounts(int limit, int offset) {
         Pageable pageable = PageRequest.of(offset / limit, limit);
-        Page<Account> accountPage = accountRepository.findAllByIbanNot(pageable, appProperties.getDefaultIban());
+        Page<Account> accountPage = accountRepository.findAllExceptBank(pageable, appProperties.getDefaultIban());
 
         List<AccountResponseDTO> result = new ArrayList<>();
         for (Account account : accountPage.getContent()) {
@@ -55,15 +52,6 @@ public class AccountService {
             responseDTOS.add(responseDTO);
         }
 
-        // Calculate combined balance for each user
-        for (MyAccountResponseDTO responseDTO : responseDTOS) {
-            double combinedBalance = 0.0;
-
-            for (Account account : accounts) {
-                combinedBalance += account.getBalance();
-            }
-            responseDTO.setTotalBalance(combinedBalance);
-        }
         return responseDTOS;
     }
 
@@ -174,6 +162,10 @@ public class AccountService {
 
     public boolean hasCurrentAccount(Long id, AccountType accountType) {
         return accountRepository.existsAccountByAccountHolder_IdAndAccountTypeEquals(id, accountType);
+    }
+
+    public double getTotalBalance(Long id){
+        return accountRepository.getCombinedBalanceByAccountHolderId(id);
     }
 
     private AccountResponseDTO mapDto(Account account) {
