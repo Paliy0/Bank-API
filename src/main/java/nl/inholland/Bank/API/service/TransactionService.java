@@ -29,11 +29,11 @@ public class TransactionService {
         this.userService = userService;
     }
 
-    public List<Transaction> getAllTransactions(int page, int limit, Long userId, LocalDate startDate,
+    public List<Transaction> getAllTransactions(int page, int size, Long userId, LocalDate startDate,
                                                 LocalDate endDate, Double minAmount, Double maxAmount,
                                                 TransactionType transactionType){
         // Pagination
-        Pageable pageable = PageRequest.of(page, limit);
+        Pageable pageable = PageRequest.of(page, size);
 
         User user = null;
 

@@ -22,23 +22,23 @@ import java.util.*;
 public class TransactionController {
     private final TransactionService transactionService;
 
-    public TransactionController(TransactionService transactionService){
+    public TransactionController(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAllTransactions(
-            @RequestParam Optional<Integer> page,
-            @RequestParam Optional<Integer> limit,
-            @RequestParam Optional<Long> userId,
-            @RequestParam Optional<LocalDate> startDate,
-            @RequestParam Optional <LocalDate> endDate,
-            @RequestParam Optional<Double> minAmount,
-            @RequestParam Optional<Double> maxAmount,
-            @RequestParam Optional<TransactionType> transactionType) {
-        List<Transaction> transactions = transactionService.getAllTransactions(page.orElse(0), limit.orElse(10),
-                userId.orElse(null), startDate.orElse(null), endDate.orElse(null), minAmount.orElse(0.00),
-                maxAmount.orElse(Double.MAX_VALUE), transactionType.orElse(null));
+            @RequestParam Integer page,
+            @RequestParam Integer size,
+            @RequestParam Long userId,
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate,
+            @RequestParam Double minAmount,
+            @RequestParam Double maxAmount,
+            @RequestParam TransactionType transactionType) {
+        List<Transaction> transactions = transactionService.getAllTransactions(page, size,
+                userId, startDate, endDate, minAmount,
+                maxAmount, transactionType);
 
         List<TransactionResponseDTO> responses = new ArrayList<>();
         for (Transaction transaction : transactions) {
@@ -52,13 +52,12 @@ public class TransactionController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> postTransaction(@RequestBody TransactionRequestDTO dto) {
         try {
-            if (dto != null){
+            if (dto != null) {
                 Transaction transaction = transactionService.performTransaction(dto);
                 TransactionResponseDTO response = buildTransactionResponse(transaction);
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
-            } else{
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Transaction data is missing or null.");
             }
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Transaction data is missing or null.");
         } catch (Exception e) {
             String errorMessage = e.getMessage();
             Map<String, String> errorResponse = new HashMap<>();
@@ -66,10 +65,11 @@ public class TransactionController {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
         }
     }
+
     @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getTransactionById(@PathVariable long id){
-        try{
+    public ResponseEntity<?> getTransactionById(@PathVariable long id) {
+        try {
             Transaction transaction = transactionService.getTransactionById(id).get();
             TransactionResponseDTO respoonse = buildTransactionResponse(transaction);
             return ResponseEntity.status(200).body(respoonse);
@@ -82,13 +82,13 @@ public class TransactionController {
     @PostMapping(value = "/atm/deposit", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> performDeposit(@RequestBody TransactionRequestDTO dto) {
         try {
-            if (dto != null){
+            if (dto != null) {
                 Transaction deposit = transactionService.performDeposit(dto);
                 TransactionResponseDTO response = buildTransactionResponse(deposit);
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
-            } else{
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Deposit data is missing or null.");
             }
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Deposit data is missing or null.");
+
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
@@ -98,13 +98,13 @@ public class TransactionController {
     @PostMapping(value = "/atm/withdrawal", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> performWithdrawal(@RequestBody TransactionRequestDTO dto) {
         try {
-            if (dto != null){
+            if (dto != null) {
                 Transaction withdrawal = transactionService.performWithdrawal(dto);
                 TransactionResponseDTO response = buildTransactionResponse(withdrawal);
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
-            } else{
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Withdrawal data is missing or null.");
             }
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Withdrawal data is missing or null.");
+
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
@@ -112,18 +112,18 @@ public class TransactionController {
 
     @PreAuthorize("hasAnyRole('ROLE_CUSTOMER', 'ROLE_EMPLOYEE')")
     @GetMapping(value = "/getDailyTotal/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getDailyTotal(@PathVariable Long userId){
-        try{
+    public ResponseEntity<Object> getDailyTotal(@PathVariable Long userId) {
+        try {
             List<Transaction> userTransactionsToday = transactionService.getUserTransactionsByDay(userId, LocalDate.now());
-            if(!userTransactionsToday.isEmpty()){
+            if (!userTransactionsToday.isEmpty()) {
                 List<TransactionResponseDTO> responses = new ArrayList<>();
                 for (Transaction transaction : userTransactionsToday) {
                     responses.add(buildTransactionResponse(transaction));
                 }
                 return ResponseEntity.status(200).body(responses);
-            } else {
-                return ResponseEntity.noContent().build();
             }
+            return ResponseEntity.noContent().build();
+
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
