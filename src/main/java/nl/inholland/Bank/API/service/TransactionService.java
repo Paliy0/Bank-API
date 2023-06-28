@@ -94,7 +94,7 @@ public class TransactionService {
 
         // check that both accounts are not the same
         if (transaction.getFromAccount().equals(transaction.getToAccount())) {
-            throw new IllegalArgumentException("You can not make a transaction to your the same account");
+            throw new IllegalArgumentException("You can not make a transaction to your same account");
         }
 
         // check if the transaction is between different users
