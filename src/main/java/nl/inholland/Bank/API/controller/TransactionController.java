@@ -6,6 +6,7 @@ import nl.inholland.Bank.API.model.dto.TransactionRequestDTO;
 import nl.inholland.Bank.API.model.dto.TransactionResponseDTO;
 import nl.inholland.Bank.API.service.TransactionService;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,19 +27,23 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
+
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getAllTransactions(
-            @RequestParam Integer page,
-            @RequestParam Integer size,
-            @RequestParam Long userId,
-            @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate,
-            @RequestParam Double minAmount,
-            @RequestParam Double maxAmount,
-            @RequestParam TransactionType transactionType) {
-        List<Transaction> transactions = transactionService.getAllTransactions(page, size,
-                userId, startDate, endDate, minAmount,
-                maxAmount, transactionType);
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) Double minAmount,
+            @RequestParam(required = false) Double maxAmount,
+            @RequestParam(required = false) TransactionType transactionType,
+            @RequestParam(required = false) String fromIban,
+            @RequestParam(required = false) String toIban,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+            ) {
+
+        Page<Transaction> transactions = transactionService.getAllTransactions(userId, startDate, endDate, minAmount,
+                maxAmount, transactionType, fromIban, toIban, page, size);
 
         List<TransactionResponseDTO> responses = new ArrayList<>();
         for (Transaction transaction : transactions) {
@@ -70,9 +75,9 @@ public class TransactionController {
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getTransactionById(@PathVariable long id) {
         try {
-            Transaction transaction = transactionService.getTransactionById(id).get();
-            TransactionResponseDTO respoonse = buildTransactionResponse(transaction);
-            return ResponseEntity.status(200).body(respoonse);
+            Transaction transaction = transactionService.getTransactionById(id);
+            TransactionResponseDTO response = buildTransactionResponse(transaction);
+            return ResponseEntity.status(200).body(response);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }

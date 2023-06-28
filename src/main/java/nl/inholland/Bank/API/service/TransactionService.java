@@ -8,12 +8,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 
 @Service
 public class TransactionService {
@@ -29,46 +30,68 @@ public class TransactionService {
         this.userService = userService;
     }
 
-    public List<Transaction> getAllTransactions(int page, int size, Long userId, LocalDate startDate,
-                                                LocalDate endDate, Double minAmount, Double maxAmount,
-                                                TransactionType transactionType){
+    public Page<Transaction> getAllTransactions(Long userId, LocalDate startDate, LocalDate endDate, Double minAmount, Double maxAmount,
+                                                TransactionType transactionType, String fromIban, String toIban, Integer page, Integer size) {
+
         // Pagination
-        Pageable pageable = PageRequest.of(page, size);
-
-        User user = null;
-
-        if (userId != null){
-            user = userService.getUserById(userId).orElse(null);
+        if (page == null) {
+            page = 0;
         }
 
-        return transactionRepository.findTransactions(minAmount, maxAmount, user,
-                transactionType, startDate, endDate, pageable).getContent();
+        if (size == null) {
+            size = 10;
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        if (minAmount == null) {
+            minAmount = 0.0;
+        }
+
+        if (maxAmount == null) {
+            maxAmount = Double.MAX_VALUE;
+        }
+
+        return transactionRepository.findTransactions(userId, startDate, endDate, minAmount, maxAmount, transactionType, fromIban, toIban, pageable);
     }
 
-    public Optional<Transaction> getTransactionById(Long id) {
-        return transactionRepository.findById(id);
+    public Transaction getTransactionById(Long id) {
+        return transactionRepository.findById(id).orElse(null);
     }
 
     public Transaction performTransaction(TransactionRequestDTO dto) {
         Transaction transaction = mapTransactionRequestDTOToTransaction(dto);
         transaction.setFromAccount(accountService.getAccountByIban(dto.fromIban()));
         transaction.setToAccount(accountService.getAccountByIban(dto.toIban()));
-        int dailyLimit;
-        int transactionLimit;
 
         // check that the accounts exist
-        if (transaction.getFromAccount() != null && transaction.getToAccount() != null){
+        if (transaction.getFromAccount() != null && transaction.getToAccount() != null) {
+
             transaction.setUser(transaction.getFromAccount().getAccountHolder());
+
+            // check if the transaction is valid
+            validateTransaction(transaction);
+
             transaction.setTransactionType(TransactionType.TRANSACTION);
-            dailyLimit = transaction.getUser().getDailyLimit();
-            transactionLimit = transaction.getUser().getTransactionLimit();
             transaction.getFromAccount().setBalance(transaction.getFromAccount().getBalance() - transaction.getAmount());
             transaction.getToAccount().setBalance(transaction.getToAccount().getBalance() + transaction.getAmount());
+            transaction.getUser().setDailyLimit((int) (transaction.getUser().getDailyLimit() - transaction.getAmount()));
             accountService.saveAccount(transaction.getFromAccount());
             accountService.saveAccount(transaction.getToAccount());
+            return transactionRepository.save(transaction);
+        }
+        throw new IllegalArgumentException("One or both of the accounts do not exist");
+    }
 
-        } else{
-            throw new IllegalArgumentException("One or both of the accounts do not exist");
+    public void validateTransaction(Transaction transaction) {
+        // check if the transaction limit is reached
+        if (transaction.getUser().getDailyLimit() < transaction.getAmount()) {
+            throw new IllegalArgumentException("The transaction amount is higher than your daily limit");
+        }
+
+        // check if the daily limit is reached
+        if (transaction.getUser().getTransactionLimit() < transaction.getAmount()) {
+            throw new IllegalArgumentException("The transaction amount is higher than your transaction limit");
         }
 
         // check that both accounts are not the same
@@ -77,23 +100,15 @@ public class TransactionService {
         }
 
         // check if the transaction is from or to a savings account and if the user is the same
-        if ((transaction.getFromAccount().getAccountType() == AccountType.SAVINGS || transaction.getToAccount().getAccountType() == AccountType.SAVINGS) && transaction.getFromAccount().getAccountHolder() != transaction.getToAccount().getAccountHolder()) {
+        if ((transaction.getFromAccount().getAccountType() == AccountType.SAVINGS || transaction.getToAccount().getAccountType() == AccountType.SAVINGS)
+                && transaction.getFromAccount().getAccountHolder() != transaction.getToAccount().getAccountHolder()) {
             throw new IllegalArgumentException("You can only make transactions to or from your own savings account");
         }
+
         // check if the balance is going to become lower than the absolute limit
         if ((transaction.getFromAccount().getBalance() - transaction.getAmount()) < transaction.getFromAccount().getAbsoluteLimit()) {
             throw new IllegalArgumentException("Your balance cannot become lower than the absolute limit(" + transaction.getFromAccount().getAbsoluteLimit() + ")+");
         }
-        // check if the daily limit is already reached
-        if (dailyLimit > transaction.getUser().getDailyLimit()) {
-            throw new IllegalArgumentException("You already reached your daily limit(" + dailyLimit + ")");
-        }
-        // check if the amount of the transaction is higher than the transaction limit
-        if (transactionLimit < transaction.getAmount()) {
-            throw new IllegalArgumentException("You are cannot transfer a higher amount than your transaction limit(" + transactionLimit + ")");
-        }
-
-        return transactionRepository.save(transaction);
     }
 
     public Transaction performDeposit(TransactionRequestDTO dto) {
@@ -101,18 +116,19 @@ public class TransactionService {
         deposit.setFromAccount(accountService.getAccountByIban(bankIban));
         deposit.setToAccount(accountService.getAccountByIban(dto.toIban()));
 
-        if (deposit.getToAccount() != null){
-            if (deposit.getToAccount().getAccountType() == AccountType.CURRENT){
+        // check that account exists
+        if (deposit.getToAccount() != null) {
+
+            // check that the account type is current
+            if (deposit.getToAccount().getAccountType() == AccountType.CURRENT) {
                 deposit.setUser(deposit.getToAccount().getAccountHolder());
                 deposit.getToAccount().setBalance(deposit.getToAccount().getBalance() + deposit.getAmount());
                 accountService.saveAccount(deposit.getToAccount());
                 return transactionRepository.save(deposit);
-            } else {
-                throw new IllegalArgumentException("You cannot deposit money to a savings account");
             }
-        } else {
-            throw new IllegalArgumentException("The account you are trying to deposit money to doesn't exist");
+            throw new IllegalArgumentException("You cannot deposit money to a savings account");
         }
+        throw new IllegalArgumentException("The account you are trying to deposit money to doesn't exist");
     }
 
     public Transaction performWithdrawal(TransactionRequestDTO dto) {
@@ -120,30 +136,30 @@ public class TransactionService {
         withdrawal.setFromAccount(accountService.getAccountByIban(dto.fromIban()));
         withdrawal.setToAccount(accountService.getAccountByIban(bankIban));
 
-        if (withdrawal.getFromAccount() != null){
-            if (withdrawal.getFromAccount().getAccountType() == AccountType.CURRENT){
+        // check that account exists
+        if (withdrawal.getFromAccount() != null) {
+
+            // check that the account type is current
+            if (withdrawal.getFromAccount().getAccountType() == AccountType.CURRENT) {
                 withdrawal.setUser(withdrawal.getFromAccount().getAccountHolder());
                 withdrawal.setTransactionType(TransactionType.WITHDRAWAL);
-                if (withdrawal.getAmount() < withdrawal.getFromAccount().getBalance()){
+
+                // check if there is enough money in the account
+                if (withdrawal.getAmount() < withdrawal.getFromAccount().getBalance()) {
                     withdrawal.getFromAccount().setBalance(withdrawal.getFromAccount().getBalance() - withdrawal.getAmount());
                     accountService.saveAccount(withdrawal.getFromAccount());
                     return transactionRepository.save(withdrawal);
-                } else{
-                    throw new IllegalArgumentException("Invalid withdrawal: There is not enough money in your account");
-
                 }
-            } else{
-                throw new IllegalArgumentException("You cannot withdraw money from a savings account");
+                throw new IllegalArgumentException("There is not enough money in your account");
             }
-        } else {
-            throw new IllegalArgumentException("The account you are trying to withdraw money from doesn't exist");
+            throw new IllegalArgumentException("You cannot withdraw money from a savings account");
         }
+        throw new IllegalArgumentException("The account you are trying to withdraw money from doesn't exist");
     }
 
     public List<Transaction> getUserTransactionsByDay(Long userId, LocalDate day) {
         LocalDateTime startTime = day.atStartOfDay();
         LocalDateTime endTime = LocalDateTime.of(day, LocalTime.MAX);
-
         return transactionRepository.findTransactionsByUserIdAndTimestampBetween(userId, startTime, endTime);
     }
 

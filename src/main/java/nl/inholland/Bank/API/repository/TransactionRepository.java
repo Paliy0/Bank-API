@@ -17,25 +17,33 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
 
     List<Transaction> findTransactionsByUserIdAndTimestampBetween(Long userId, LocalDateTime startDate, LocalDateTime endDate);
 
-    default Page<Transaction> findTransactions(double minAmount, double maxAmount, User user, TransactionType transactionType,
-                                               LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    default Page<Transaction> findTransactions(Long userId, LocalDate startDate, LocalDate endDate, Double minAmount, Double maxAmount,
+                                               TransactionType transactionType, String fromIban, String toIban, Pageable pageable) {
 
         Specification<Transaction> specification = Specification.where(null);
 
-        if (minAmount >= 0 && maxAmount >= 0) {
-            specification = specification.and(TransactionSpecifications.withAmountBetween(minAmount, maxAmount));
+        if (userId != null) {
+            specification = specification.and(TransactionSpecifications.withUserID(userId));
         }
 
         if (startDate != null && endDate != null) {
             specification = specification.and(TransactionSpecifications.withTimestampBetween(startDate, endDate));
         }
 
-        if (user != null) {
-            specification = specification.and(TransactionSpecifications.withUserID(user.getId()));
+        if (minAmount >= 0 && maxAmount >= 0) {
+            specification = specification.and(TransactionSpecifications.withAmountBetween(minAmount, maxAmount));
         }
 
         if (transactionType != null) {
             specification = specification.and(TransactionSpecifications.withTransactionType(transactionType));
+        }
+
+        if (fromIban != null) {
+            specification = specification.and(TransactionSpecifications.withFromIban(fromIban));
+        }
+
+        if (toIban != null) {
+            specification = specification.and(TransactionSpecifications.withToIban(toIban));
         }
 
         return findAll(specification, pageable);
