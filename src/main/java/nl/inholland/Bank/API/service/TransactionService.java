@@ -20,14 +20,12 @@ import org.springframework.stereotype.Service;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
-    private final UserService userService;
     private final AccountService accountService;
     private final String bankIban = "NL01INHO0000000001";
 
-    public TransactionService(TransactionRepository transactionRepository, @Lazy AccountService accountService, @Lazy UserService userService) {
+    public TransactionService(TransactionRepository transactionRepository, @Lazy AccountService accountService) {
         this.transactionRepository = transactionRepository;
         this.accountService = accountService;
-        this.userService = userService;
     }
 
     public Page<Transaction> getAllTransactions(Long userId, LocalDate startDate, LocalDate endDate, Double minAmount, Double maxAmount,
@@ -60,38 +58,38 @@ public class TransactionService {
     }
 
     public Transaction performTransaction(TransactionRequestDTO dto) {
+        // map request to transaction
         Transaction transaction = mapTransactionRequestDTOToTransaction(dto);
+
+        // get the accounts based on the ibans
         transaction.setFromAccount(accountService.getAccountByIban(dto.fromIban()));
         transaction.setToAccount(accountService.getAccountByIban(dto.toIban()));
 
-        // check that the accounts exist
-        if (transaction.getFromAccount() != null && transaction.getToAccount() != null) {
+        // check if the transaction is valid
+        validateTransaction(transaction);
 
-            transaction.setUser(transaction.getFromAccount().getAccountHolder());
+        // set missing transaction information
+        transaction.setUser(transaction.getFromAccount().getAccountHolder());
+        transaction.setTransactionType(TransactionType.TRANSACTION);
 
-            // check if the transaction is valid
-            validateTransaction(transaction);
+        // update accounts with new balances
+        transaction.getFromAccount().setBalance(transaction.getFromAccount().getBalance() - transaction.getAmount());
+        transaction.getToAccount().setBalance(transaction.getToAccount().getBalance() + transaction.getAmount());
+        accountService.saveAccount(transaction.getFromAccount());
+        accountService.saveAccount(transaction.getToAccount());
 
-            transaction.setTransactionType(TransactionType.TRANSACTION);
-            transaction.getFromAccount().setBalance(transaction.getFromAccount().getBalance() - transaction.getAmount());
-            transaction.getToAccount().setBalance(transaction.getToAccount().getBalance() + transaction.getAmount());
+        // update daily limit just if its between different users
+        if (transaction.getUser() != transaction.getToAccount().getAccountHolder())
             transaction.getUser().setDailyLimit((int) (transaction.getUser().getDailyLimit() - transaction.getAmount()));
-            accountService.saveAccount(transaction.getFromAccount());
-            accountService.saveAccount(transaction.getToAccount());
-            return transactionRepository.save(transaction);
-        }
-        throw new IllegalArgumentException("One or both of the accounts do not exist");
+
+        // save the transaction
+        return transactionRepository.save(transaction);
     }
 
     public void validateTransaction(Transaction transaction) {
-        // check if the transaction limit is reached
-        if (transaction.getUser().getDailyLimit() < transaction.getAmount()) {
-            throw new IllegalArgumentException("The transaction amount is higher than your daily limit");
-        }
-
-        // check if the daily limit is reached
-        if (transaction.getUser().getTransactionLimit() < transaction.getAmount()) {
-            throw new IllegalArgumentException("The transaction amount is higher than your transaction limit");
+        // check that the accounts exist
+        if (transaction.getFromAccount() == null || transaction.getToAccount() == null) {
+            throw new IllegalArgumentException("One or both of the accounts do not exist");
         }
 
         // check that both accounts are not the same
@@ -99,62 +97,90 @@ public class TransactionService {
             throw new IllegalArgumentException("You can not make a transaction to your the same account");
         }
 
-        // check if the transaction is from or to a savings account and if the user is the same
-        if ((transaction.getFromAccount().getAccountType() == AccountType.SAVINGS || transaction.getToAccount().getAccountType() == AccountType.SAVINGS)
-                && transaction.getFromAccount().getAccountHolder() != transaction.getToAccount().getAccountHolder()) {
-            throw new IllegalArgumentException("You can only make transactions to or from your own savings account");
+        // check if the transaction is between different users
+        if (transaction.getFromAccount().getAccountHolder() != transaction.getToAccount().getAccountHolder()){
+            // check if transaction limit is reached
+            if (transaction.getFromAccount().getAccountHolder().getTransactionLimit() < transaction.getAmount()) {
+                throw new IllegalArgumentException("The transaction amount is higher than your transaction limit");
+            }
+            // check if the daily limit is reached
+            if (transaction.getFromAccount().getAccountHolder().getDailyLimit() < transaction.getAmount()) {
+                throw new IllegalArgumentException("The transaction amount is higher than your daily limit");
+            }
+            // check if the transaction is not from or to a savings account
+            if (transaction.getFromAccount().getAccountType() == AccountType.SAVINGS || transaction.getToAccount().getAccountType() == AccountType.SAVINGS) {
+                throw new IllegalArgumentException("You can only transfer money between your own current and savings accounts");
+            }
         }
 
         // check if the balance is going to become lower than the absolute limit
         if ((transaction.getFromAccount().getBalance() - transaction.getAmount()) < transaction.getFromAccount().getAbsoluteLimit()) {
-            throw new IllegalArgumentException("Your balance cannot become lower than the absolute limit(" + transaction.getFromAccount().getAbsoluteLimit() + ")+");
+            throw new IllegalArgumentException("Your balance cannot become lower than the absolute limit");
         }
     }
 
     public Transaction performDeposit(TransactionRequestDTO dto) {
         Transaction deposit = mapTransactionRequestDTOToTransaction(dto);
+
+        // get the accounts based on the ibans
         deposit.setFromAccount(accountService.getAccountByIban(bankIban));
         deposit.setToAccount(accountService.getAccountByIban(dto.toIban()));
 
-        // check that account exists
-        if (deposit.getToAccount() != null) {
+        // check if the deposit is valid
+        validateATM(deposit);
 
-            // check that the account type is current
-            if (deposit.getToAccount().getAccountType() == AccountType.CURRENT) {
-                deposit.setUser(deposit.getToAccount().getAccountHolder());
-                deposit.getToAccount().setBalance(deposit.getToAccount().getBalance() + deposit.getAmount());
-                accountService.saveAccount(deposit.getToAccount());
-                return transactionRepository.save(deposit);
-            }
-            throw new IllegalArgumentException("You cannot deposit money to a savings account");
-        }
-        throw new IllegalArgumentException("The account you are trying to deposit money to doesn't exist");
+        // set missing deposit information
+        deposit.setUser(deposit.getToAccount().getAccountHolder());
+        deposit.setTransactionType(TransactionType.DEPOSIT);
+
+        // update account with new balance
+        deposit.getToAccount().setBalance(deposit.getToAccount().getBalance() + deposit.getAmount());
+        accountService.saveAccount(deposit.getToAccount());
+
+        // save the deposit
+        return transactionRepository.save(deposit);
     }
 
     public Transaction performWithdrawal(TransactionRequestDTO dto) {
         Transaction withdrawal = mapTransactionRequestDTOToTransaction(dto);
+
+        // get the accounts based on the ibans
         withdrawal.setFromAccount(accountService.getAccountByIban(dto.fromIban()));
         withdrawal.setToAccount(accountService.getAccountByIban(bankIban));
 
-        // check that account exists
-        if (withdrawal.getFromAccount() != null) {
+        // check if the withdrawal is valid
+        validateATM(withdrawal);
 
-            // check that the account type is current
-            if (withdrawal.getFromAccount().getAccountType() == AccountType.CURRENT) {
-                withdrawal.setUser(withdrawal.getFromAccount().getAccountHolder());
-                withdrawal.setTransactionType(TransactionType.WITHDRAWAL);
+        // set missing withdrawal information
+        withdrawal.setUser(withdrawal.getFromAccount().getAccountHolder());
+        withdrawal.setTransactionType(TransactionType.WITHDRAWAL);
 
-                // check if there is enough money in the account
-                if (withdrawal.getAmount() < withdrawal.getFromAccount().getBalance()) {
-                    withdrawal.getFromAccount().setBalance(withdrawal.getFromAccount().getBalance() - withdrawal.getAmount());
-                    accountService.saveAccount(withdrawal.getFromAccount());
-                    return transactionRepository.save(withdrawal);
-                }
-                throw new IllegalArgumentException("There is not enough money in your account");
-            }
-            throw new IllegalArgumentException("You cannot withdraw money from a savings account");
+        // update account with new balance
+        withdrawal.getFromAccount().setBalance(withdrawal.getFromAccount().getBalance() - withdrawal.getAmount());
+        accountService.saveAccount(withdrawal.getFromAccount());
+
+        // update daily limit
+        withdrawal.getUser().setDailyLimit((int) (withdrawal.getUser().getDailyLimit() - withdrawal.getAmount()));
+
+        // save the withdrawal
+        return transactionRepository.save(withdrawal);
+    }
+
+    public void validateATM(Transaction atmTransaction){
+        // check if the account exists
+        if (atmTransaction.getFromAccount() == null || atmTransaction.getToAccount() == null) {
+            throw new IllegalArgumentException("The account doesn't exist");
         }
-        throw new IllegalArgumentException("The account you are trying to withdraw money from doesn't exist");
+
+        // check account type
+        if (atmTransaction.getFromAccount().getAccountType() == AccountType.SAVINGS || atmTransaction.getToAccount().getAccountType() == AccountType.SAVINGS) {
+            throw new IllegalArgumentException("You cannot withdraw or deposit money using your savings account");
+        }
+
+        // check if the balance is going to become lower than the absolute limit
+        if ((atmTransaction.getFromAccount().getBalance() - atmTransaction.getAmount()) < (atmTransaction.getFromAccount().getAbsoluteLimit())){
+            throw new IllegalArgumentException("The balance cannot become lower than the absolute limit");
+        }
     }
 
     public List<Transaction> getUserTransactionsByDay(Long userId, LocalDate day) {
