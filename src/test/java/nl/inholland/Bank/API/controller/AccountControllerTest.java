@@ -46,8 +46,6 @@ import nl.inholland.Bank.API.service.AccountService;
 import nl.inholland.Bank.API.service.UserService;
 import nl.inholland.Bank.API.util.JwtTokenProvider;
 
-@ExtendWith({SpringExtension.class})
-@EnableMethodSecurity
 @WebMvcTest(AccountController.class)
 public class AccountControllerTest {
 
@@ -107,7 +105,6 @@ public class AccountControllerTest {
         employee.setDailyLimit(10000);
         employee.setTransactionLimit(1000);
         employee.setRole(Role.ROLE_EMPLOYEE);
-        userService.add(employee);
 
         Account userCurrentAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, customer);
         userCurrentAccount.setIban(accountService.generateIBAN());
@@ -336,7 +333,7 @@ public class AccountControllerTest {
             .andExpect(jsonPath("$").value("Error retrieving account: Account with this IBAN doesn't exist"));
     }
 
-    @Test
+        @Test
         @WithMockUser(username = "employee@inholland.com", roles = {"EMPLOYEE"})
         void insertAccount_success() throws Exception {
         AccountRequestDTO request = new AccountRequestDTO(AccountStatus.ACTIVE, AccountType.CURRENT, new AccountUserResponseDTO(1L, "John", "Doe", "f", "f", "d", "f", "f"));
