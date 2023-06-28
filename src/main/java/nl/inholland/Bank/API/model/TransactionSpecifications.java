@@ -8,15 +8,6 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDate;
 
 public class TransactionSpecifications {
-    public static Specification<Transaction> withAmountBetween(double minAmount, double maxAmount) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.between(root.get("amount"), minAmount, maxAmount);
-    }
-
-    public static Specification<Transaction> withTimestampBetween(LocalDate startDate, LocalDate endDate) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.between(root.get("timestamp"), startDate, endDate);
-    }
 
     public static Specification<Transaction> withUserID(Long accountHolderID) {
         return (root, query, criteriaBuilder) -> {
@@ -29,8 +20,28 @@ public class TransactionSpecifications {
         };
     }
 
+    public static Specification<Transaction> withTimestampBetween(LocalDate startDate, LocalDate endDate) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.between(root.get("timestamp"), startDate, endDate);
+    }
+
+    public static Specification<Transaction> withAmountBetween(Double minAmount, Double maxAmount) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.between(root.get("amount"), minAmount, maxAmount);
+    }
+
     public static Specification<Transaction> withTransactionType(TransactionType transactionType) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("transactionType"), transactionType);
+    }
+
+    public static Specification<Transaction> withFromIban(String fromIban) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("fromAccount").get("iban"), fromIban);
+    }
+
+    public static Specification<Transaction> withToIban(String toIban) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("toAccount").get("iban"), toIban);
     }
 }

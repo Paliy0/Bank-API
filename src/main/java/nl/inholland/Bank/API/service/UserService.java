@@ -177,19 +177,7 @@ public class UserService {
     public UserDLimitDTO getDailyLimit(Long id) {
         Optional<User> response = userRepository.findById(id);
         User user = response.get();
-
-        LocalDate today = LocalDate.now();
-        List<Transaction> transactionsOfToday = transactionService.getUserTransactionsByDay(user.getId(), today);
-
-        int dailyTotal = 0;
-        for (Transaction transaction : transactionsOfToday) {
-            dailyTotal += transaction.getAmount();
-        }
-
-        int dailyLimitLeft = user.getDailyLimit() - dailyTotal;
-
-        UserDLimitDTO dailyLimit = new UserDLimitDTO(user.getId(), dailyLimitLeft);
-        return dailyLimit;
+        return new UserDLimitDTO(user.getId(), user.getDailyLimit());
     }
 
     public UserDLimitDTO updateDailyLimit(Long id, int dailyLimit) {

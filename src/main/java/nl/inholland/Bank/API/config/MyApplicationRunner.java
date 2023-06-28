@@ -128,12 +128,12 @@ public class MyApplicationRunner implements ApplicationRunner {
 
         Account userCurrentAccount = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, customer);
         userCurrentAccount.setIban(accountService.generateIBAN());
-        userCurrentAccount.setBalance(250.25);
+        userCurrentAccount.setBalance(0.00);
         accountService.saveAccount(userCurrentAccount);
 
         Account userSavingsAccount = new Account(AccountType.SAVINGS, AccountStatus.ACTIVE, customer);
         userSavingsAccount.setIban(accountService.generateIBAN());
-        userSavingsAccount.setBalance(249.75);
+        userSavingsAccount.setBalance(300.50);
         accountService.saveAccount(userSavingsAccount);
 
         Account employeeCurrent = new Account(AccountType.CURRENT, AccountStatus.ACTIVE, employee);
@@ -182,9 +182,9 @@ public class MyApplicationRunner implements ApplicationRunner {
         transaction4.setDescription("different day transaction user 5 to customer");
         transaction4.setTransactionType(TransactionType.TRANSACTION);
 
-        transactionRepository.save(transaction1);
-        transactionRepository.save(transaction2);
-        transactionRepository.save(transaction3);
-        transactionRepository.save(transaction4);
+//        transactionRepository.save(transaction1);
+//        transactionRepository.save(transaction2);
+//        transactionRepository.save(transaction3);
+//        transactionRepository.save(transaction4);
     }
 }
