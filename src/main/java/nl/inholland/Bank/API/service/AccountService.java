@@ -1,23 +1,19 @@
 package nl.inholland.Bank.API.service;
 
-import nl.inholland.Bank.API.model.Account;
-import nl.inholland.Bank.API.model.AccountStatus;
-import nl.inholland.Bank.API.model.AccountType;
-import nl.inholland.Bank.API.model.Role;
-import nl.inholland.Bank.API.model.User;
+import nl.inholland.Bank.API.config.MyAppProperties;
+import nl.inholland.Bank.API.model.*;
 import nl.inholland.Bank.API.model.dto.*;
 import nl.inholland.Bank.API.repository.AccountRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class AccountService {
@@ -25,33 +21,24 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final UserService userService;
     private final ModelMapper modelMapper;
+    private final MyAppProperties appProperties;
 
-    public AccountService(AccountRepository accountRepository, UserService userService) {
+    @Autowired
+    public AccountService(@Qualifier("myAppProperties") MyAppProperties appProperties, AccountRepository accountRepository, UserService userService) {
         this.accountRepository = accountRepository;
         this.userService = userService;
         this.modelMapper = new ModelMapper();
+        this.appProperties = appProperties;
     }
 
     public List<AccountResponseDTO> getAllAccounts(int limit, int offset) {
-        Iterable<Account> accountList = accountRepository.findAllByIbanNot("NL01INHO0000000001");
-        int count = 0;
+        Pageable pageable = PageRequest.of(offset / limit, limit);
+        Page<Account> accountPage = accountRepository.findAllExceptBank(pageable, appProperties.getDefaultIban());
+
         List<AccountResponseDTO> result = new ArrayList<>();
-
-        for (Account account : accountList) {
-
-            Optional<User> userOptional = userService.getUserById(account.getAccountHolder().getId());
-            AccountResponseDTO responseDTO = modelMapper.map(account, AccountResponseDTO.class);
-
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                AccountUserResponseDTO accountUserResponseDTO = modelMapper.map(user, AccountUserResponseDTO.class);
-                responseDTO.setUser(accountUserResponseDTO);
-            }
-
-            if (count >= offset && count < offset + limit) {
-                result.add(responseDTO);
-            }
-            count++;
+        for (Account account : accountPage.getContent()) {
+            AccountResponseDTO responseDTO = this.mapDto(account);
+            result.add(responseDTO);
         }
         return result;
     }
@@ -65,15 +52,6 @@ public class AccountService {
             responseDTOS.add(responseDTO);
         }
 
-        // Calculate combined balance for each user
-        for (MyAccountResponseDTO responseDTO : responseDTOS) {
-            double combinedBalance = 0.0;
-
-            for (Account account : accounts) {
-                combinedBalance += account.getBalance();
-            }
-            responseDTO.setTotalBalance(combinedBalance);
-        }
         return responseDTOS;
     }
 
@@ -90,55 +68,45 @@ public class AccountService {
         return responseDTOS;
     }
 
-    public AccountResponseDTO getAccountByIban2(String iban) {
-        AccountResponseDTO responseDTO = modelMapper.map(accountRepository.findAccountByIbanAndIbanNot(iban, "NL01INHO0000000001"), AccountResponseDTO.class);
-
-        Optional<User> userOptional = userService.getUserById(accountRepository.findAccountByIbanAndIbanNot(iban, "NL01INHO0000000001").getAccountHolder().getId());
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            AccountUserResponseDTO accountUserResponseDTO = modelMapper.map(user, AccountUserResponseDTO.class);
-            responseDTO.setUser(accountUserResponseDTO);
-        }
-        return responseDTO;
+    public AccountResponseDTO getAccountByIbanExceptBank(String iban) {
+        return this.mapDto(accountRepository.findAccountByIbanAndIbanNot(iban, appProperties.getDefaultIban()));
     }
 
-    public ResponseEntity<String> createAccount(AccountRequestDTO accountRequest) {
+    public AccountResponseDTO createAccount(AccountRequestDTO accountRequest) {
         Long userId = accountRequest.getAccountHolder().getId();
         User user = userService.getUserById(userId).get();
-        boolean hasAccount = this.hasAccount(userId);
         AccountType accountType = accountRequest.getAccountType();
 
-        if (hasAccount) {
-            boolean hasCurrentAccount = this.hasCurrentAccount(userId, AccountType.CURRENT);
-            boolean hasSavingsAccount = this.hasCurrentAccount(userId, AccountType.SAVINGS);
+        if (this.hasAccount(accountRequest.getAccountHolder().getId())) {
+            boolean hasCurrentAccount = this.hasCurrentAccount(accountRequest.getAccountHolder().getId(), AccountType.CURRENT);
+            boolean hasSavingsAccount = this.hasCurrentAccount(accountRequest.getAccountHolder().getId(), AccountType.SAVINGS);
 
             if (hasCurrentAccount && hasSavingsAccount) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot add a new account, user already has both a savings and a current account");
+                throw new IllegalArgumentException("Cannot add a new account, user already has both a savings and a current account");
             }
-
             switch (accountType) {
                 case SAVINGS:
                     if (hasSavingsAccount) {
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot create another savings account");
+                        throw new IllegalArgumentException("Cannot create another savings account");
                     } else if (!hasCurrentAccount) {
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot create a savings account without a current account");
+                        throw new IllegalArgumentException("Cannot create a savings account without a current account");
                     }
                     break;
 
                 case CURRENT:
                     if (hasCurrentAccount) {
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot create another current account");
+                        throw new IllegalArgumentException("Cannot create another current account");
                     } else if (hasSavingsAccount) {
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot create a current account when a savings account already exists");
+                        throw new IllegalArgumentException("Cannot create a current account when a savings account already exists");
                     }
                     break;
 
                 default:
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid account type");
+                    throw new IllegalArgumentException("Invalid account type");
             }
         } else {
             if (accountType.equals(AccountType.SAVINGS)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot create a savings account without an existing current account");
+                throw new IllegalArgumentException("Cannot create a savings account without an existing current account");
             }
         }
 
@@ -146,11 +114,11 @@ public class AccountService {
         account.setAccountHolder(user);
         this.saveAccount(account);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully: " + this.mapDto(account).toString());
+        return this.mapDto(account);
     }
 
     public AccountResponseDTO updateAccountStatus(String iban, AccountStatus accountStatus) {
-        Account updateAccountStatus = accountRepository.findAccountByIbanAndIbanNot(iban, "NL01INHO0000000001");
+        Account updateAccountStatus = accountRepository.findAccountByIbanAndIbanNot(iban, appProperties.getDefaultIban());
         updateAccountStatus.setAccountStatus(accountStatus);
         accountRepository.save(updateAccountStatus);
 
@@ -158,11 +126,11 @@ public class AccountService {
     }
 
     public AccountResponseDTO updateAccountAbsoluteLimit(String iban, double absoluteLimit) {
-        Account updateAccount = accountRepository.findAccountByIbanAndIbanNot(iban, "NL01INHO0000000001");
-        updateAccount.setAbsoluteLimit(absoluteLimit);
-        accountRepository.save(updateAccount);
+        Account updateAccountAbsoluteLimit = accountRepository.findAccountByIbanAndIbanNot(iban, appProperties.getDefaultIban());
+        updateAccountAbsoluteLimit.setAbsoluteLimit(absoluteLimit);
+        accountRepository.save(updateAccountAbsoluteLimit);
 
-        return this.mapDto(updateAccount);
+        return this.mapDto(updateAccountAbsoluteLimit);
     }
 
     public void saveAccount(Account newAccount) {
@@ -171,7 +139,7 @@ public class AccountService {
         }
         User user = newAccount.getAccountHolder();
 
-        if(user.getRole().toString() == "ROLE_USER"){
+        if (Objects.equals(user.getRole().toString(), "ROLE_USER")) {
             user.setRole(Role.ROLE_CUSTOMER);
         }
         newAccount.setAccountHolder(user);
@@ -196,16 +164,16 @@ public class AccountService {
         return accountRepository.existsAccountByAccountHolder_IdAndAccountTypeEquals(id, accountType);
     }
 
-    public Long countAccounts(Long id) {
-        return accountRepository.countAccountByAccountHolder_Id(id);
+    public double getTotalBalance(Long id){
+        return accountRepository.getCombinedBalanceByAccountHolderId(id);
     }
 
-    private AccountResponseDTO mapDto(Account updateAccount) {
-        AccountResponseDTO accountResponseDTO = modelMapper.map(updateAccount, AccountResponseDTO.class);
-        Optional<User> userOptional = userService.getUserById(updateAccount.getAccountHolder().getId());
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            AccountUserResponseDTO accountUserResponseDTO = modelMapper.map(user, AccountUserResponseDTO.class);
+    private AccountResponseDTO mapDto(Account account) {
+        AccountResponseDTO accountResponseDTO = modelMapper.map(account, AccountResponseDTO.class);
+        User accountHolder = account.getAccountHolder();
+
+        if (accountHolder != null) {
+            AccountUserResponseDTO accountUserResponseDTO = modelMapper.map(accountHolder, AccountUserResponseDTO.class);
             accountResponseDTO.setUser(accountUserResponseDTO);
         }
 
