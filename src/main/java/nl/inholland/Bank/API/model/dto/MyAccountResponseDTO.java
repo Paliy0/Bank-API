@@ -19,4 +19,9 @@ public class MyAccountResponseDTO {
     private LocalDate createdAt;
     private AccountType accountType;
     private AccountStatus accountStatus;
+    private double totalBalance;
+
+    public void setTotalBalance(double totalBalance) {
+        this.totalBalance = totalBalance;
+    }
 }

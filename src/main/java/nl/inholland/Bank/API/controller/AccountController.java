@@ -9,9 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/accounts", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -52,17 +50,10 @@ public class AccountController {
      */
     @PreAuthorize("hasAnyRole('ROLE_EMPLOYEE', 'ROLE_CUSTOMER')")
     @GetMapping(value = "/myAccounts/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getMyAccounts(@PathVariable Long userId) {
+    public ResponseEntity<Iterable<MyAccountResponseDTO>> getMyAccounts(@PathVariable Long userId) {
         try {
-            List<MyAccountResponseDTO> accountResponseDTOS = accountService.findAccountsByLoggedInUser(userId);
-            double totalBalance = accountService.getTotalBalance(userId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("accounts", accountResponseDTOS);
-            response.put("totalBalance", totalBalance);
-
-            if (!accountResponseDTOS.isEmpty()) {
-                return ResponseEntity.ok().body(response);
+            if (!accountService.findAccountsByLoggedInUser(userId).isEmpty()) {
+                return ResponseEntity.ok().body(accountService.findAccountsByLoggedInUser(userId));
             } else {
                 return ResponseEntity.notFound().build();
             }
@@ -99,9 +90,9 @@ public class AccountController {
     @GetMapping(value = "/{iban}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAccountByIban(@PathVariable String iban) {
         try {
-            return ResponseEntity.ok().body(accountService.getAccountByIbanExceptBank(iban));
+            return ResponseEntity.ok().body(accountService.getAccountByIban2(iban));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving account: Account with this IBAN does not exist");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving account: Account with this IBAN doesn't exist");
         }
     }
 
@@ -112,13 +103,11 @@ public class AccountController {
      */
     @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PostMapping
-    public ResponseEntity<Object> insertAccount(@RequestBody AccountRequestDTO accountRequest) {
+    public ResponseEntity<String> insertAccount(@RequestBody AccountRequestDTO accountRequest) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(accountService.createAccount(accountRequest));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return accountService.createAccount(accountRequest);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }
     }
 
@@ -129,12 +118,12 @@ public class AccountController {
      */
     @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PutMapping(value = "/accountStatus/{iban}")
-    public ResponseEntity<AccountResponseDTO> updateAccountStatus(@PathVariable String iban, @RequestBody StatusAccountRequestDTO accountStatusRequest) {
+    public ResponseEntity<String> updateAccountStatus(@PathVariable String iban, @RequestBody StatusAccountRequestDTO accountStatusRequest) {
         try {
             AccountStatus newAccountStatus = AccountStatus.valueOf(accountStatusRequest.accountStatus());
-            return ResponseEntity.status(HttpStatus.OK).body(accountService.updateAccountStatus(iban, newAccountStatus));
+            return ResponseEntity.status(HttpStatus.OK).body("Account status updated successfully: " + accountService.updateAccountStatus(iban, newAccountStatus).toString());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }
     }
 
@@ -145,12 +134,12 @@ public class AccountController {
      */
     @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @PutMapping(value = "/absoluteLimit/{iban}")
-    public ResponseEntity<AccountResponseDTO> updateAccountAbsoluteLimit(@PathVariable String iban, @RequestBody AbsoluteLimitAccountRequestDTO accountAbsoluteLimitRequest) {
+    public ResponseEntity<String> updateAccountAbsoluteLimit(@PathVariable String iban, @RequestBody AbsoluteLimitAccountRequestDTO accountAbsoluteLimitRequest) {
         try {
             double absoluteLimit = accountAbsoluteLimitRequest.absoluteLimit();
-            return ResponseEntity.status(HttpStatus.OK).body(accountService.updateAccountAbsoluteLimit(iban, absoluteLimit));
+            return ResponseEntity.status(HttpStatus.OK).body("Absolute limit updated successfully: " + accountService.updateAccountAbsoluteLimit(iban, absoluteLimit).toString());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected server error");
         }
     }
 }
