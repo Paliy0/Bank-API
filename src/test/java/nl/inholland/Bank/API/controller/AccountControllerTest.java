@@ -15,7 +15,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -25,7 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -46,6 +44,7 @@ import nl.inholland.Bank.API.service.AccountService;
 import nl.inholland.Bank.API.service.UserService;
 import nl.inholland.Bank.API.util.JwtTokenProvider;
 
+@EnableMethodSecurity
 @WebMvcTest(AccountController.class)
 public class AccountControllerTest {
 
@@ -408,10 +407,4 @@ public class AccountControllerTest {
             .andExpect(status().isInternalServerError())
             .andExpect(jsonPath("$").value("Unexpected server error"));
     }
-
-
-
-
-
-
 }
