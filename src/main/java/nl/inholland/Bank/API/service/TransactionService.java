@@ -189,7 +189,7 @@ public class TransactionService {
         return transactionRepository.findTransactionsByUserIdAndTimestampBetween(userId, startTime, endTime);
     }
 
-    private Transaction mapTransactionRequestDTOToTransaction(TransactionRequestDTO dto) {
+    public Transaction mapTransactionRequestDTOToTransaction(TransactionRequestDTO dto) {
         Transaction transaction = new Transaction();
         transaction.setTimestamp(LocalDateTime.now());
         transaction.setAmount(dto.amount());
