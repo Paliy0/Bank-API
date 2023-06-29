@@ -2,6 +2,7 @@ package nl.inholland.Bank.API.model;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Transaction {
 
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_seq")

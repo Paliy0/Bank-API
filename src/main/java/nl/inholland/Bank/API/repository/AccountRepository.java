@@ -3,9 +3,7 @@ package nl.inholland.Bank.API.repository;
 import nl.inholland.Bank.API.model.Account;
 import nl.inholland.Bank.API.model.AccountType;
 import nl.inholland.Bank.API.model.User;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Query;
+
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,8 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AccountRepository extends CrudRepository<Account, Long> {
 
-    @Query("SELECT a FROM Account a WHERE a.iban <> :iban")
-    Page<Account> findAllExceptBank(Pageable pageable, @Param("iban") String iban);
+    Iterable<Account> findAllByIbanNot(@Param("iban") String iban);
 
     Account findAccountByIban(@Param("iban") String iban);
 
@@ -28,10 +25,9 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
 
     boolean existsAccountByAccountHolder_IdAndAccountTypeEquals(Long accountHolder_id, AccountType accountType);
 
+    long countAccountByAccountHolder_Id(@Param("id") Long id);
+
     Iterable<Account> findAccountsByAccountHolder(User user);
 
     Iterable<Account> findAccountsByAccountHolder_Id(Long id);
-
-    @Query("SELECT SUM(a.balance) FROM Account a WHERE a.accountHolder.id = :id")
-    Double getCombinedBalanceByAccountHolderId(@Param("id") Long id);
 }

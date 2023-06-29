@@ -1,6 +1,7 @@
 package nl.inholland.Bank.API.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Account {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_seq")
     @Id

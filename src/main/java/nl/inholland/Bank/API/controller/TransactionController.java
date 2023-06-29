@@ -134,7 +134,7 @@ public class TransactionController {
         }
     }
 
-    private TransactionResponseDTO buildTransactionResponse(Transaction transaction) {
+    public TransactionResponseDTO buildTransactionResponse(Transaction transaction) {
         return new TransactionResponseDTO(
                 transaction.getId(),
                 transaction.getUser().getFirstName() + " " + transaction.getUser().getLastName(),

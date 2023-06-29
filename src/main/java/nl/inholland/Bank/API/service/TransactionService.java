@@ -94,7 +94,7 @@ public class TransactionService {
 
         // check that both accounts are not the same
         if (transaction.getFromAccount().equals(transaction.getToAccount())) {
-            throw new IllegalArgumentException("You can not make a transaction to your the same account");
+            throw new IllegalArgumentException("You can not make a transaction to your same account");
         }
 
         // check if the transaction is between different users
@@ -189,7 +189,7 @@ public class TransactionService {
         return transactionRepository.findTransactionsByUserIdAndTimestampBetween(userId, startTime, endTime);
     }
 
-    private Transaction mapTransactionRequestDTOToTransaction(TransactionRequestDTO dto) {
+    public Transaction mapTransactionRequestDTOToTransaction(TransactionRequestDTO dto) {
         Transaction transaction = new Transaction();
         transaction.setTimestamp(LocalDateTime.now());
         transaction.setAmount(dto.amount());
