@@ -1,29 +1,24 @@
-#Feature: Everything guitars
+#Feature: User Management
 #
-#  Scenario: Getting all guitars
-#    Given I have a valid token for role "user"
-#    When I call the guitar endpoint
-#    Then the result is a list of guitars of size 3
+#  Background:
+#    Given the user has logged in as a normal user
 #
-#  Scenario: Getting guitars with invalid token
-#    Given I have an invalid token
-#    When I call the guitar endpoint
-#    Then the result is a status of 403
+#  Scenario: Register a user
+#    Given the user provides valid user details
+#    When the client requests to register the user
+#    Then the server should respond with status code 200
 #
-#  Scenario: Getting guitars with an expired token
-#    Given I have an expired token
-#    When I call the guitar endpoint
-#    Then the result is a status of 403
+#  Scenario: Change user details
+#    Given the user is logged in and provides data to be changed
+#    When the user requests to change the data
+#    Then the server should respond with status code 200
 #
-#  Scenario: Posting guitar with user role
-#    Given I have a valid token for role "user"
-#    And I have a valid guitar object with brand "Fender" and model "Jazz" and price 1600
-#    When I make a post request to the guitar endpoint
-#    Then the result is a status of 403
+#  Scenario: Get transaction limit
+#    When the client requests to get the transaction limit
+#    Then the server should respond with status code 200
+#    And the server responds with the transaction limit
 #
-#  Scenario: Posting guitar with admin role
-#    Given I have a valid token for role "admin"
-#    And I have a valid guitar object with brand "Fender" and model "Jazz" and price 1600
-#    When I make a post request to the guitar endpoint
-#    Then the result is a status of 201
-#    And I validate the guitar object has an id greater than 1000003
+#  Scenario: Get daily limit
+#    When the client requests to get the daily limit
+#    Then the server should respond with status code 200
+#    And the server responds with the daily limit
