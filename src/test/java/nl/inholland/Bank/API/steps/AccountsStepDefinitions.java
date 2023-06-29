@@ -19,11 +19,11 @@ public class AccountsStepDefinitions extends BaseStepDefinitions {
         httpHeaders.clear();
         httpHeaders.add("Content-Type", "application/json");
         LoginDTO loginDTO;
-        if (role.equalsIgnoreCase("role_employee")) {
+        if (role.equalsIgnoreCase("ROLE_EMPLOYEE")) {
             loginDTO = new LoginDTO("employee@inholland.com", "Test123!");
-        } else if (role.equalsIgnoreCase("role_customer")) {
+        } else if (role.equalsIgnoreCase("ROLE_CUSTOMER")) {
             loginDTO = new LoginDTO("customer@inholland.com", "Test123!");
-        } else if (role.equalsIgnoreCase("role_user")) {
+        } else if (role.equalsIgnoreCase("ROLE_USER")) {
             loginDTO = new LoginDTO("user@inholland.com", "Test123!");
         } else {
             throw new IllegalArgumentException("Role is not valid");
