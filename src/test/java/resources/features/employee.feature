@@ -1,18 +1,18 @@
-#Feature: Employee Management
-#
-#  Background:
-#    Given the user has logged in as an employee
-#
-#  Scenario: Get all users
-#    When the client requests to get all users
-#    Then the server should respond with status code 200
-#    And the response body should contain a list of users
-#
-#  Scenario: Register a user
-#    Given the user provides valid user details
-#    When the client requests to register the user
-#    Then the server should respond with status code 200
-#    And the response body should contain a success message
+Feature: Employee Management
+
+  Background:
+    Given the user has logged in as an employee
+
+  Scenario: Get all users
+    When the client requests to get all users
+    Then the server should respond with status code 200 for getting all users
+    And the response body should contain a list of users
+
+  Scenario: Register a user
+    Given the user provides valid user details
+    When the client requests to register the user
+    Then the server should respond with status code 200 for registering
+    And the response body should contain a success message for registering
 #
 #  Scenario: Delete a user
 #    When the client requests to delete a user by ID
