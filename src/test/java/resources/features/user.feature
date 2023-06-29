@@ -3,11 +3,6 @@
 #  Background:
 #    Given the user has logged in as a normal user
 #
-#  Scenario: Register a user
-#    Given the user provides valid user details
-#    When the client requests to register the user
-#    Then the server should respond with status code 200
-#
 #  Scenario: Change user details
 #    Given the user is logged in and provides data to be changed
 #    When the user requests to change the data
