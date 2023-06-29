@@ -8,18 +8,21 @@ import nl.inholland.Bank.API.model.dto.AccountResponseDTO;
 import nl.inholland.Bank.API.model.dto.LoginDTO;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 
 import java.util.List;
 
 public class AccountsStepDefinitions extends BaseStepDefinitions {
+    private String authenticationHeader;
 
     @Given("I log in with the role {string}")
     public void iAmLoggedInAsEmployee(String role) throws com.fasterxml.jackson.core.JsonProcessingException {
         httpHeaders.clear();
         httpHeaders.add("Content-Type", "application/json");
+
         LoginDTO loginDTO;
-        if (role.equalsIgnoreCase("ROLE_EMPLOYEE")) {
+        if (role.equals("ROLE_EMPLOYEE")) {
             loginDTO = new LoginDTO("employee@inholland.com", "Test123!");
         } else if (role.equalsIgnoreCase("ROLE_CUSTOMER")) {
             loginDTO = new LoginDTO("customer@inholland.com", "Test123!");
@@ -28,7 +31,7 @@ public class AccountsStepDefinitions extends BaseStepDefinitions {
         } else {
             throw new IllegalArgumentException("Role is not valid");
         }
-        httpHeaders.add("Authorization", "Bearer" + getToken(loginDTO));
+        httpHeaders.add("Authorization", "Bearer " + getToken(loginDTO));
     }
 
     @Then("the response status code should be {int}")
@@ -45,6 +48,17 @@ public class AccountsStepDefinitions extends BaseStepDefinitions {
                         null,
                         httpHeaders),
                 String.class);
+
+        // Handle WWW-Authenticate header
+        HttpHeaders responseHeaders = response.getHeaders();
+        List<String> authenticateHeaders = responseHeaders.get("WWW-Authenticate");
+        if (authenticateHeaders != null && !authenticateHeaders.isEmpty()) {
+            String authenticateHeader = authenticateHeaders.get(0);
+            // Extract the necessary information from the authenticateHeader and construct the authentication header for subsequent requests
+            // For example, if using Basic Authentication, you might extract the realm and create the Authorization header as follows:
+            //String realm = extractRealm(authenticateHeader);
+            //authenticationHeader = "Basic " + encodeCredentials(username, password, realm);
+        }
 
     }
 

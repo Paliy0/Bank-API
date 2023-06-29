@@ -45,7 +45,7 @@ public class BaseStepDefinitions {
 
 
     protected String getToken(LoginDTO loginDTO) throws com.fasterxml.jackson.core.JsonProcessingException {
-        response = restTemplate.exchange("/auth/login",
+        response = restTemplate.exchange("/login",
                 HttpMethod.POST,
                 new HttpEntity<>(objectMapper.writeValueAsString(loginDTO), httpHeaders), String.class);
 
