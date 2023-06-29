@@ -1,31 +1,34 @@
 package nl.inholland.Bank.API.steps;
 
-import lombok.extern.slf4j.Slf4j;
-import nl.inholland.Bank.API.steps.CucumberContextConfig;
-import org.springframework.beans.factory.annotation.Value;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.inholland.Bank.API.model.dto.LoginDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
-@SpringBootTest(classes = CucumberContextConfig.class)
-@Slf4j
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+//@CucumberContextConfiguration
 public class BaseStepDefinitions {
 
-    @LocalServerPort
-    private int port;
+    @Autowired
+    protected TestRestTemplate restTemplate;
 
-    @Value("${io.swagger}")
-    private String baseUrl;
+    protected ObjectMapper objectMapper;
 
-    public final HttpHeaders httpHeaders = new HttpHeaders();
-    public String getBaseUrl() {
-        return baseUrl + port;
-    }
+    protected ResponseEntity<String> response;
+    protected HttpHeaders httpHeaders = new HttpHeaders();
 
-    public void setHttpHeaders(String token) {
-        httpHeaders.clear();
-        httpHeaders.add("Authorization",  "Bearer " + token);
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+    protected String getToken(LoginDTO loginDTO) throws com.fasterxml.jackson.core.JsonProcessingException {
+        response = restTemplate
+                .exchange("/auth/login",
+                        HttpMethod.POST,
+                        new HttpEntity<>(objectMapper.writeValueAsString(loginDTO), httpHeaders), String.class);
+        LoginDTO tokenDTO = objectMapper.readValue(response.getBody(), LoginDTO.class);
+        return tokenDTO.toString();
     }
 }
